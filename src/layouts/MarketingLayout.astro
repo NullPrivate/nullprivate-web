@@ -1,0 +1,72 @@
+---
+import { getBrand } from '../lib/brand';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const brand = getBrand();
+const { title, description = brand.description } = Astro.props;
+const pageTitle = title.includes(brand.siteName) ? title : `${title} | ${brand.siteName}`;
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={new URL(Astro.url.pathname, brand.siteUrl).toString()} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <script is:inline define:vars={{ gaId: brand.gaId }}>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){window.dataLayer.push(arguments);}
+      window.gtag = gtag;
+      gtag('js', new Date());
+      gtag('config', gaId);
+    </script>
+    <script async src={`https://www.googletagmanager.com/gtag/js?id=${brand.gaId}`}></script>
+    <style define:vars={{
+      brandPrimary: brand.theme.primary,
+      brandPrimarySoft: brand.theme.primarySoft,
+      brandAccent: brand.theme.accent,
+      brandSurface: brand.theme.surface,
+      brandText: brand.theme.text,
+    }}>
+      :root {
+        --brand-primary: var(--brandPrimary);
+        --brand-primary-soft: var(--brandPrimarySoft);
+        --brand-accent: var(--brandAccent);
+        --brand-surface: var(--brandSurface);
+        --brand-text: var(--brandText);
+      }
+    </style>
+  </head>
+  <body class="min-h-screen bg-white text-slate-900 antialiased">
+    <header class="border-b border-slate-200/80 bg-white/90 backdrop-blur">
+      <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4">
+        <a href="/" class="text-lg font-bold text-[var(--brand-text)]">{brand.siteName}</a>
+        <nav class="flex flex-wrap items-center gap-4 text-sm font-medium text-slate-700">
+          <a href="/docs/">文档</a>
+          <a href="/blog/">博客</a>
+          <a href="/pricing/">购买</a>
+          <a href="/my-service/">我的服务</a>
+          <a href="https://list.adguardprivate.com/" rel="noreferrer" target="_blank">清单平台</a>
+        </nav>
+      </div>
+    </header>
+    <main>
+      <slot />
+    </main>
+    <footer class="border-t border-slate-200 bg-slate-50">
+      <div class="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-8 text-sm text-slate-600">
+        <p>{brand.siteName} · {brand.subtitle}</p>
+        <p>{brand.beian}</p>
+        <p class="text-xs text-slate-500">Brand: {brand.id} · GA: {brand.gaId}</p>
+      </div>
+    </footer>
+  </body>
+</html>
