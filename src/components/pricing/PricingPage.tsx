@@ -1,21 +1,32 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  familyFeatureLines,
   familyPlans,
-  personalFeatureLines,
   personalPlans,
-  trialFeatureLines,
   trialPlans,
   type PricingPlan,
 } from '../../data/pricing-plans';
 import { isMobileUa, resolveApiBase } from '../../lib/api';
 import { trackEvent } from '../analytics/track';
+import { createCommerceTranslator, type Translator } from '../../lib/commerce-i18n';
+import { localizedPath } from '../../lib/site';
+
+
+const commonFeatureKeys = ['platforms', 'protocols', 'logs', 'statistics', 'rules'];
+const personalFeatureKeys = [...commonFeatureKeys, 'personalDevices', 'personalRate', 'personalAudience'];
+const familyFeatureKeys = [...commonFeatureKeys, 'familyDevices', 'familyRate', 'independentRules', 'familyAudience'];
+
+function planFeatures(audience: 'personal' | 'family', t: Translator, trial = false) {
+  const keys = audience === 'family' ? familyFeatureKeys : personalFeatureKeys;
+  return (trial ? ['trial', ...keys] : keys).map((key) => t(`features.${key}`));
+}
 
 interface PricingPageProps {
   apiBase: string;
   stageApiBase: string;
   stageHost: string;
   region?: string;
+  messages?: Record<string, string>;
+  locale?: string;
 }
 
 interface InviteState {
@@ -29,7 +40,10 @@ export default function PricingPage({
   stageApiBase,
   stageHost,
   region = 'zh_cn',
+  messages,
+  locale = 'zh-cn',
 }: PricingPageProps) {
+  const t = useMemo(() => createCommerceTranslator(messages), [messages]);
   const [personalId, setPersonalId] = useState(personalPlans[0]?.id ?? '');
   const [familyId, setFamilyId] = useState(familyPlans[0]?.id ?? '');
   const [inviteCode, setInviteCode] = useState('');
@@ -38,8 +52,8 @@ export default function PricingPage({
   const [inviteState, setInviteState] = useState<InviteState | null>(null);
   const [verifying, setVerifying] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState(false);
-  const [paymentTitle, setPaymentTitle] = useState('正在创建订单…');
-  const [paymentHint, setPaymentHint] = useState('请稍候，即将打开支付宝支付页面');
+  const [paymentTitle, setPaymentTitle] = useState(t('pricing.payment.creating'));
+  const [paymentHint, setPaymentHint] = useState(t('pricing.payment.opening'));
   const [errorMessage, setErrorMessage] = useState('');
   const [showPanel, setShowPanel] = useState(false);
   const [showNotice, setShowNotice] = useState(false);
@@ -87,10 +101,10 @@ export default function PricingPage({
     paymentLoadingRef.current = active;
     clearSlowTimer();
     if (active) {
-      setPaymentTitle('正在创建订单…');
-      setPaymentHint('请稍候，即将打开支付宝支付页面');
+      setPaymentTitle(t('pricing.payment.creating'));
+      setPaymentHint(t('pricing.payment.opening'));
       slowTimerRef.current = window.setTimeout(() => {
-        setPaymentHint('加载时间较长，请耐心等待，无需重复下单');
+        setPaymentHint(t('pricing.payment.slow'));
       }, 12000);
     }
   }
@@ -102,7 +116,7 @@ export default function PricingPage({
 
     if (!code) {
       setInviteState(null);
-      setInviteMsg('请输入邀请码');
+      setInviteMsg(t('pricing.invite.required'));
       setInviteOk(false);
       return;
     }
@@ -129,7 +143,7 @@ export default function PricingPage({
       }
 
       if (!res.ok) {
-        const message = (data && (data.message || data.error)) || text || '验证失败，请稍后重试';
+        const message = (data && (data.message || data.error)) || text || t('pricing.invite.failed');
         setInviteMsg(message);
         setInviteOk(false);
         setInviteState({ code, valid: false, message });
@@ -138,14 +152,14 @@ export default function PricingPage({
 
       const valid = data && typeof data.valid !== 'undefined' ? !!data.valid : true;
       const bonus = data && (data.bonus || data.extra);
-      const okMsg = (data && data.message) || (bonus ? `邀请码有效：赠送 ${bonus}` : '邀请码有效');
-      const badMsg = (data && data.message) || '邀请码无效';
+      const okMsg = (data && data.message) || (bonus ? t('pricing.invite.bonus', { bonus }) : t('pricing.invite.valid'));
+      const badMsg = (data && data.message) || t('pricing.invite.invalid');
       const message = valid ? okMsg : badMsg;
       setInviteMsg(message);
       setInviteOk(valid);
       setInviteState({ code, valid, message });
     } catch {
-      setInviteMsg('网络错误，稍后重试');
+      setInviteMsg(t('pricing.invite.networkError'));
       setInviteOk(false);
       setInviteState({ code, valid: false, message: 'network_error' });
     } finally {
@@ -201,9 +215,9 @@ export default function PricingPage({
       if (code) {
         const valid = inviteState && inviteState.code === code && inviteState.valid === true;
         if (!valid) {
-          setInviteMsg('请先点击“验证邀请码”，确认有效后再下单');
+          setInviteMsg(t('pricing.invite.verifyFirstHint'));
           setInviteOk(false);
-          throw new Error('请先验证邀请码后再下单');
+          throw new Error(t('pricing.invite.verifyFirst'));
         }
       }
 
@@ -234,56 +248,54 @@ export default function PricingPage({
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: '支付请求失败，请稍后重试' }));
-        throw new Error(errorData.message || '支付请求失败，请稍后重试');
+        const errorData = await response.json().catch(() => ({ message: t('pricing.payment.failed') }));
+        throw new Error(errorData.message || t('pricing.payment.failed'));
       }
 
       const data = await response.json();
-      setPaymentTitle('正在加载支付页面…');
+      setPaymentTitle(t('pricing.payment.loading'));
       setFrameHtml(typeof data === 'string' ? data : String(data));
       setShowFrame(true);
     } catch (error) {
       setLoading(false);
-      setErrorMessage(error instanceof Error ? error.message : '发生错误，请稍后重试');
+      setErrorMessage(error instanceof Error ? error.message : t('common.error'));
     }
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-10">
-      <section className="rounded-3xl bg-[var(--brand-surface)] p-6 shadow-sm ring-1 ring-black/5 md:p-8">
-        <h1 className="text-3xl font-bold tracking-tight text-[var(--brand-text)] md:text-4xl">购买宁屏服务</h1>
-        <p className="mt-3 max-w-3xl text-base leading-7 text-slate-600">
-          无需注册, 尊重隐私. 适合个人和家庭的多台设备使用的 宁屏服务.
+    <div lang={locale} className="bg-[var(--marketing-bg)] text-[var(--marketing-text)] mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-10">
+      <section className="rounded-3xl bg-[var(--marketing-surface)] p-6 shadow-sm ring-1 ring-[var(--marketing-border)] md:p-8">
+        <h1 className="text-3xl font-bold tracking-tight text-[var(--marketing-text)] md:text-4xl">{t('pricing.title')}</h1>
+        <p className="mt-3 max-w-3xl text-base leading-7 text-[var(--marketing-muted)]">
+          {t('pricing.description')}
         </p>
-        <div className="mt-6 rounded-2xl bg-white p-4 ring-1 ring-slate-200">
-          <h2 className="text-lg font-semibold text-slate-900">如何选择</h2>
-          <ul className="mt-3 space-y-2 text-sm leading-6 text-slate-600">
+        <div className="mt-6 rounded-2xl bg-[var(--marketing-surface)] p-4 ring-1 ring-[var(--marketing-border)]">
+          <h2 className="text-lg font-semibold text-[var(--marketing-text)]">{t('pricing.choose.title')}</h2>
+          <ul className="mt-3 space-y-2 text-sm leading-6 text-[var(--marketing-muted)]">
             <li>
-              <strong>体验版</strong>：限时 7 天体验，用于验证兼容性与拦截效果
+              {t('pricing.choose.trial')}
             </li>
             <li>
-              <strong>个人版</strong>：5 台设备、每秒 30 次请求，适合个人多设备
+              {t('pricing.choose.personal')}
             </li>
             <li>
-              <strong>家庭版</strong>：20 台设备、每秒 100 次请求，适合多人家庭，
-              <strong>每台设备可独立设置规则</strong>
+              {t('pricing.choose.family')}
             </li>
           </ul>
         </div>
       </section>
 
       <section className="space-y-4">
-        <h2 className="text-xl font-semibold text-[var(--brand-text)]">体验版</h2>
+        <h2 className="text-xl font-semibold text-[var(--marketing-text)]">{t('plans.trial')}</h2>
         <div className="grid gap-4 md:grid-cols-2">
           {trialPlans.map((plan) => (
             <PlanCard
               key={plan.id}
-              title={plan.period}
+              title={t(`plans.${plan.id}.period`)}
               price={plan.price}
-              features={trialFeatureLines(plan.id)}
-              accent
+              features={planFeatures(plan.id === '872e9d54-c5ab-424c-8dcd-426157f07759' ? 'family' : 'personal', t, true)}
               disabled={paymentLoading}
-              buttonText={plan.buttonText || '立即体验'}
+              buttonText={t('pricing.try')}
               onBuy={() => submitOrder(plan)}
             />
           ))}
@@ -291,24 +303,24 @@ export default function PricingPage({
       </section>
 
       <section className="space-y-4">
-        <h2 className="text-xl font-semibold text-[var(--brand-text)]">正式套餐</h2>
+        <h2 className="text-xl font-semibold text-[var(--marketing-text)]">{t('pricing.plans.title')}</h2>
         <div className="grid gap-4 md:grid-cols-2">
           <SelectablePlanCard
-            badge="个人版"
-            badgeClass="bg-sky-100 text-sky-700"
+            badge={t('plans.personal')}
             plans={personalPlans}
             selectedId={personalId}
-            features={personalFeatureLines}
+            features={planFeatures('personal', t)}
+            t={t}
             disabled={paymentLoading}
             onChange={setPersonalId}
             onBuy={() => personalSelected && submitOrder(personalSelected)}
           />
           <SelectablePlanCard
-            badge="家庭版"
-            badgeClass="bg-violet-100 text-violet-700"
+            badge={t('plans.family')}
             plans={familyPlans}
             selectedId={familyId}
-            features={familyFeatureLines}
+            features={planFeatures('family', t)}
+            t={t}
             disabled={paymentLoading}
             onChange={setFamilyId}
             onBuy={() => familySelected && submitOrder(familySelected)}
@@ -316,25 +328,24 @@ export default function PricingPage({
         </div>
       </section>
 
-      <section className="rounded-3xl bg-white p-5 ring-1 ring-slate-200">
-        <h2 className="text-lg font-semibold text-slate-900">邀请有礼</h2>
-        <ul className="mt-3 space-y-2 text-sm text-slate-600">
+      <section className="rounded-3xl bg-[var(--marketing-surface)] p-5 ring-1 ring-[var(--marketing-border)]">
+        <h2 className="text-lg font-semibold text-[var(--marketing-text)]">{t('pricing.invite.title')}</h2>
+        <ul className="mt-3 space-y-2 text-sm text-[var(--marketing-muted)]">
           <li>
-            填写邀请人的 <span className="font-semibold text-[var(--brand-accent)]">邀请码</span>，
-            <strong>您与邀请人</strong>均可获得<span className="font-semibold text-[var(--brand-accent)]">额外赠送使用时长</span>
+            {t('pricing.invite.description')}
           </li>
           <li>
-            <strong>试用版</strong>不参与邀请赠送
+            {t('pricing.invite.excluded')}
           </li>
         </ul>
         <div className="mt-4 flex flex-wrap items-center gap-2">
-          <label className="text-sm text-slate-600" htmlFor="invitecode">
-            邀请码（可选）
+          <label className="text-sm text-[var(--marketing-muted)]" htmlFor="invitecode">
+            {t('pricing.invite.label')}
           </label>
           <input
             id="invitecode"
-            className="min-w-[220px] flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm"
-            placeholder="输入邀请码"
+            className="bg-[var(--marketing-surface)] text-[var(--marketing-text)] placeholder:text-[var(--marketing-muted)] min-w-[220px] flex-1 rounded-lg border border-[var(--marketing-border)] px-3 py-2 text-sm"
+            placeholder={t('pricing.invite.placeholder')}
             autoComplete="one-time-code"
             inputMode="text"
             value={inviteCode}
@@ -343,15 +354,15 @@ export default function PricingPage({
           <button
             id="inviteVerifyBtn"
             type="button"
-            className="rounded-lg bg-[var(--brand-primary-soft)] px-3 py-2 text-sm font-medium text-white disabled:opacity-60"
+            className="rounded-lg bg-[var(--marketing-primary)] px-3 py-2 text-sm font-medium text-[var(--marketing-on-primary)] disabled:opacity-60"
             disabled={verifying || paymentLoading}
             onClick={verifyInvite}
           >
-            {verifying ? '验证中...' : '验证邀请码'}
+            {verifying ? t('pricing.invite.verifying') : t('pricing.invite.verify')}
           </button>
           <span
             id="inviteVerifyMsg"
-            className={`text-sm ${inviteOk === true ? 'text-emerald-600' : inviteOk === false ? 'text-rose-600' : 'text-slate-500'}`}
+            className={`rounded-md px-2 py-1 text-sm ${inviteOk === true ? 'bg-emerald-100 text-emerald-900' : inviteOk === false ? 'bg-rose-100 text-rose-900' : 'text-[var(--marketing-muted)]'}`}
             aria-live="polite"
           >
             {inviteMsg}
@@ -369,27 +380,27 @@ export default function PricingPage({
       >
         <div
           id="paymentLoading"
-          className="absolute inset-0 z-10 flex flex-col items-center justify-center rounded-xl border border-slate-200 bg-slate-50 p-6 text-center"
+          className="absolute inset-0 z-10 flex flex-col items-center justify-center rounded-xl border border-[var(--marketing-border)] bg-[var(--marketing-surface)] p-6 text-center"
           role="status"
           aria-live="polite"
           aria-atomic="true"
           hidden={!paymentLoading}
         >
           <span
-            className="payment-spinner mb-6 h-12 w-12 rounded-full border-[3px] border-slate-200 border-t-[var(--brand-primary)]"
+            className="payment-spinner mb-6 h-12 w-12 rounded-full border-[3px] border-[var(--marketing-border)] border-t-[var(--marketing-primary)]"
             aria-hidden="true"
           />
-          <div id="paymentLoadingTitle" className="text-lg font-semibold text-slate-900">
+          <div id="paymentLoadingTitle" className="text-lg font-semibold text-[var(--marketing-text)]">
             {paymentTitle}
           </div>
-          <p id="paymentLoadingHint" className="mt-2 text-sm text-slate-600">
+          <p id="paymentLoadingHint" className="mt-2 text-sm text-[var(--marketing-muted)]">
             {paymentHint}
           </p>
         </div>
 
         <div
           id="errorMessage"
-          className="mb-3 rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-700"
+          className="mb-3 rounded-xl bg-rose-100 px-4 py-3 text-sm text-rose-900"
           role="alert"
           style={{ display: errorMessage ? 'block' : 'none' }}
         >
@@ -399,7 +410,7 @@ export default function PricingPage({
         <iframe
           ref={frameRef}
           id="paymentFrame"
-          title="支付宝支付页面"
+          title={t('common.paymentFrame')}
           className="min-h-[600px] w-full border-0"
           style={{ display: showFrame ? 'block' : 'none' }}
           srcDoc={frameHtml || undefined}
@@ -407,45 +418,41 @@ export default function PricingPage({
         />
       </section>
 
-      <section id="payment_notice" className="rounded-3xl bg-white p-5 ring-1 ring-slate-200" hidden={!showNotice}>
-        <h3 className="text-lg font-semibold text-slate-900">支付提示</h3>
-        <ul className="mt-3 space-y-2 text-sm text-slate-600">
+      <section id="payment_notice" className="rounded-3xl bg-[var(--marketing-surface)] p-5 ring-1 ring-[var(--marketing-border)]" hidden={!showNotice}>
+        <h3 className="text-lg font-semibold text-[var(--marketing-text)]">{t('pricing.notice.title')}</h3>
+        <ul className="mt-3 space-y-2 text-sm text-[var(--marketing-muted)]">
           <li>
-            支付成功后，支付宝会回跳到后端成功页，展示
-            <span className="font-semibold text-[var(--brand-accent)]">账号密码</span>与
-            <span className="font-semibold text-[var(--brand-accent)]">控制台链接</span>，请妥善保管。
+            {t('pricing.notice.success')}
           </li>
           <li>
-            如果支付成功后长时间未返回，可前往
-            <a className="font-semibold text-[var(--brand-primary)] underline" href="/my-service/">我的服务</a>
-            查询订单与服务状态。
+            <a className="font-semibold text-[var(--marketing-primary)] underline" href={localizedPath('/my-service/', locale)}>{t('pricing.notice.query')}</a>
           </li>
-          <li>如果您遇到支付问题, 请联系客服, 我们会尽快处理.</li>
+          <li>{t('pricing.notice.support')}</li>
         </ul>
         <div className="mt-4 flex flex-wrap gap-3">
           <a
-            className="rounded-xl bg-[var(--brand-primary)] px-4 py-2 text-sm font-semibold text-white"
-            href="/my-service/"
+            className="rounded-xl bg-[var(--marketing-primary)] px-4 py-2 text-sm font-semibold text-[var(--marketing-on-primary)]"
+            href={localizedPath('/my-service/', locale)}
           >
-            已支付，去我的服务查询
+            {t('pricing.notice.queryAction')}
           </a>
-          <a className="rounded-xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700" href="/docs/startup/config/">
-            查看配置指南
+          <a className="rounded-xl bg-[var(--marketing-soft)] px-4 py-2 text-sm font-semibold text-[var(--marketing-text)]" href={localizedPath('/docs/startup/config/', locale)}>
+            {t('pricing.notice.guide')}
           </a>
         </div>
       </section>
 
-      <section className="rounded-3xl bg-slate-50 p-5 text-sm leading-7 text-slate-700 ring-1 ring-slate-200">
-        <h3 className="text-base font-semibold text-slate-900">需要帮助？</h3>
+      <section className="rounded-3xl bg-[var(--marketing-surface)] p-5 text-sm leading-7 text-[var(--marketing-text)] ring-1 ring-[var(--marketing-border)]">
+        <h3 className="text-base font-semibold text-[var(--marketing-text)]">{t('pricing.help.title')}</h3>
         <p className="mt-2">
-          微信：<span className="font-semibold text-rose-700">private6688</span>
+          {t('pricing.help.wechat')}<span className="font-semibold text-[var(--marketing-primary)]">private6688</span>
           <br />
-          或发送邮件到{' '}
-          <a className="font-semibold text-rose-700" href="mailto:service1@nullprivate.com">
+          {t('pricing.help.email')}{' '}
+          <a className="font-semibold text-[var(--marketing-primary)]" href="mailto:service1@nullprivate.com">
             service1@nullprivate.com
           </a>
           <br />
-          请尽量描述问题场景与设备平台，便于快速排查。
+          {t('pricing.help.description')}
         </p>
       </section>
 
@@ -468,7 +475,6 @@ function PlanCard({
   buttonText,
   onBuy,
   disabled,
-  accent = false,
 }: {
   title: string;
   price: string;
@@ -476,15 +482,14 @@ function PlanCard({
   buttonText: string;
   onBuy: () => void;
   disabled?: boolean;
-  accent?: boolean;
 }) {
   return (
-    <article className="flex h-full flex-col rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+    <article className="flex h-full flex-col rounded-3xl bg-[var(--marketing-surface)] p-5 shadow-sm ring-1 ring-[var(--marketing-border)]">
       <div className="flex items-start justify-between gap-3">
-        <h3 className="text-xl font-semibold text-slate-900">{title}</h3>
-        <p className="text-2xl font-bold text-[var(--brand-primary)]">{price}</p>
+        <h3 className="text-xl font-semibold text-[var(--marketing-text)]">{title}</h3>
+        <p className="text-2xl font-bold text-[var(--marketing-primary)]">{price}</p>
       </div>
-      <ul className="mt-4 flex-1 space-y-2 text-sm leading-6 text-slate-600">
+      <ul className="mt-4 flex-1 space-y-2 text-sm leading-6 text-[var(--marketing-muted)]">
         {features.map((feature) => (
           <li key={feature}>• {feature}</li>
         ))}
@@ -492,9 +497,7 @@ function PlanCard({
       <div className="mt-5 flex justify-end">
         <button
           type="button"
-          className={`item_btn rounded-lg px-4 py-2 text-sm font-medium text-white disabled:opacity-60 ${
-            accent ? 'bg-[var(--brand-accent)]' : 'bg-[var(--brand-primary)]'
-          }`}
+          className="item_btn rounded-lg bg-[var(--marketing-primary)] px-4 py-2 text-sm font-medium text-[var(--marketing-on-primary)] disabled:opacity-60"
           disabled={disabled}
           onClick={onBuy}
         >
@@ -507,7 +510,7 @@ function PlanCard({
 
 function SelectablePlanCard({
   badge,
-  badgeClass,
+  t,
   plans,
   selectedId,
   features,
@@ -516,7 +519,7 @@ function SelectablePlanCard({
   disabled,
 }: {
   badge: string;
-  badgeClass: string;
+  t: Translator;
   plans: PricingPlan[];
   selectedId: string;
   features: string[];
@@ -526,44 +529,44 @@ function SelectablePlanCard({
 }) {
   const selected = plans.find((plan) => plan.id === selectedId) ?? plans[0];
   return (
-    <article className="flex h-full flex-col rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+    <article className="flex h-full flex-col rounded-3xl bg-[var(--marketing-surface)] p-5 shadow-sm ring-1 ring-[var(--marketing-border)]">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${badgeClass}`}>{badge}</span>
-          <h3 className="mt-2 text-xl font-semibold text-slate-900">{selected?.period}</h3>
+          <span className="inline-flex rounded-full bg-[var(--marketing-soft)] px-2.5 py-1 text-xs font-semibold text-[var(--marketing-primary)]">{badge}</span>
+          <h3 className="mt-2 text-xl font-semibold text-[var(--marketing-text)]">{selected ? t(`plans.${selected.id}.period`) : ''}</h3>
         </div>
-        <p className="text-2xl font-bold text-[var(--brand-primary)]">{selected?.price}</p>
+        <p className="text-2xl font-bold text-[var(--marketing-primary)]">{selected?.price}</p>
       </div>
-      <ul className="mt-4 flex-1 space-y-2 text-sm leading-6 text-slate-600">
+      <ul className="mt-4 flex-1 space-y-2 text-sm leading-6 text-[var(--marketing-muted)]">
         {features.map((feature) => (
           <li key={feature}>• {feature}</li>
         ))}
       </ul>
       <div className="mt-5 flex flex-wrap items-center gap-3">
-        <label className="text-sm text-slate-600" htmlFor={`${badge}-plan-select`}>
-          时长
+        <label className="text-sm text-[var(--marketing-muted)]" htmlFor={`${plans[0]?.audience}-plan-select`}>
+          {t('common.duration')}
         </label>
         <select
-          id={`${badge}-plan-select`}
-          className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          id={`${plans[0]?.audience}-plan-select`}
+          className="bg-[var(--marketing-surface)] text-[var(--marketing-text)] placeholder:text-[var(--marketing-muted)] rounded-lg border border-[var(--marketing-border)] px-3 py-2 text-sm"
           value={selectedId}
           disabled={disabled}
           onChange={(event) => onChange(event.target.value)}
         >
           {plans.map((plan) => (
             <option key={plan.id} value={plan.id}>
-              {plan.period}
+              {t(`plans.${plan.id}.period`)}
             </option>
           ))}
         </select>
         <span className="flex-1" />
         <button
           type="button"
-          className="item_btn rounded-lg bg-[var(--brand-primary)] px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
+          className="item_btn rounded-lg bg-[var(--marketing-primary)] px-4 py-2 text-sm font-medium text-[var(--marketing-on-primary)] disabled:opacity-60"
           disabled={disabled}
           onClick={onBuy}
         >
-          购买
+          {t('common.buy')}
         </button>
       </div>
     </article>

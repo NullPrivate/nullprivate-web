@@ -2,13 +2,20 @@
 import MyServicePage from '../../components/my-service/MyServicePage';
 import MarketingLayout from '../../layouts/MarketingLayout.astro';
 import { getBrand } from '../../lib/brand';
+import { getMessages } from '../../lib/i18n';
+import type { Locale } from '../../lib/site';
 
+interface Props { locale?: Locale }
+const { locale = 'zh-cn' } = Astro.props;
+const { common, commerce } = getMessages(locale);
 const brand = getBrand();
 ---
 
-<MarketingLayout title="我的服务" description="查询和续费我的服务">
+<MarketingLayout locale={locale} title={common.service} description={common.serviceDescription}>
   <MyServicePage
     client:load
+    locale={locale}
+    messages={commerce}
     apiBase={brand.apiBase}
     stageApiBase={brand.stageApiBase}
     stageHost={brand.stageHost}

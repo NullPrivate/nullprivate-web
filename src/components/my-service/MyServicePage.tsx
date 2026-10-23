@@ -2,12 +2,16 @@ import { useEffect, useMemo, useState } from 'react';
 import { familyRenewOptions, personalRenewOptions } from '../../data/renew-plans';
 import { isMobileUa, resolveApiBase } from '../../lib/api';
 import { trackEvent } from '../analytics/track';
+import { createCommerceTranslator } from '../../lib/commerce-i18n';
+import { localizedPath } from '../../lib/site';
 
 interface MyServicePageProps {
   apiBase: string;
   stageApiBase: string;
   stageHost: string;
   region?: string;
+  messages?: Record<string, string>;
+  locale?: string;
 }
 
 interface GiftRecord {
@@ -31,12 +35,12 @@ interface ServiceData {
   recent_gift_records?: GiftRecord[];
 }
 
-function formatDateTime(iso?: string) {
+function formatDateTime(iso: string | undefined, locale: string) {
   try {
     if (!iso) return '';
     const d = new Date(iso);
     if (Number.isNaN(d.getTime())) return iso;
-    return d.toLocaleString();
+    return d.toLocaleString(locale);
   } catch {
     return iso || '';
   }
@@ -67,7 +71,10 @@ export default function MyServicePage({
   stageApiBase,
   stageHost,
   region = 'zh_cn',
+  messages,
+  locale = 'zh-cn',
 }: MyServicePageProps) {
+  const t = useMemo(() => createCommerceTranslator(messages), [messages]);
   const [serviceName, setServiceName] = useState('');
   const [querying, setQuerying] = useState(false);
   const [error, setError] = useState('');
@@ -119,7 +126,7 @@ export default function MyServicePage({
     const raw = serviceName.trim();
     if (!raw) {
       setData(null);
-      setError('请输入要查询的服务地址');
+      setError(t('service.query.required'));
       setQuerying(false);
       return;
     }
@@ -138,15 +145,15 @@ export default function MyServicePage({
           const errJson = await response.json().catch(() => ({}));
           throw { status: response.status, message: errJson.msg || errJson.message || `HTTP ${response.status}` };
         }
-        throw { status: response.status, message: `HTTP ${response.status}: 非JSON响应` };
+        throw { status: response.status, message: t('service.query.httpNonJson', { status: response.status }) };
       }
       if (!contentType.includes('application/json')) {
-        throw { status: 200, message: '服务返回非JSON内容' };
+        throw { status: 200, message: t('service.query.nonJson') };
       }
       const json = (await response.json()) as ServiceData;
       if (json.ret_code !== 0) {
         setData(null);
-        setError(`查询失败: ${json.msg || '未知错误'}`);
+        setError(t('service.query.failed', { message: json.msg || t('common.unknownError') }));
         return;
       }
       setData(json);
@@ -154,29 +161,29 @@ export default function MyServicePage({
     } catch (err: any) {
       setData(null);
       if (err?.name === 'AbortError') {
-        setError('查询超时: 请求超过 10 秒');
+        setError(t('service.query.timeout'));
       } else if (typeof err?.status === 'number') {
         switch (err.status) {
           case 404:
-            setError('未找到该服务，请确认名称是否正确');
+            setError(t('service.query.notFound'));
             break;
           case 400:
-            setError('请求参数错误，请检查输入');
+            setError(t('service.query.badRequest'));
             break;
           case 502:
           case 503:
           case 504:
-            setError('服务暂时不可用，请稍后重试');
+            setError(t('service.query.unavailable'));
             break;
           case 401:
           case 403:
-            setError('暂无权限访问该资源');
+            setError(t('service.query.forbidden'));
             break;
           default:
-            setError(`查询失败: ${err.message || '未知错误'}`);
+            setError(t('service.query.failed', { message: err.message || t('common.unknownError') }));
         }
       } else {
-        setError(`查询失败: ${err?.message || '未知错误'}`);
+        setError(t('service.query.failed', { message: err?.message || t('common.unknownError') }));
       }
     } finally {
       window.clearTimeout(timeoutId);
@@ -207,14 +214,14 @@ export default function MyServicePage({
         }),
       });
       if (!response.ok) {
-        const err = await response.json().catch(() => ({ message: '续费请求失败，请稍后重试' }));
-        throw new Error(err.message || err.msg || '续费请求失败，请稍后重试');
+        const err = await response.json().catch(() => ({ message: t('service.renew.requestFailed') }));
+        throw new Error(err.message || err.msg || t('service.renew.requestFailed'));
       }
       const html = await response.json();
       setFrameHtml(typeof html === 'string' ? html : String(html));
       setShowFrame(true);
     } catch (err: any) {
-      setError(err?.message || '续费失败，请稍后重试');
+      setError(err?.message || t('service.renew.failed'));
     } finally {
       setRenewing(false);
     }
@@ -222,7 +229,7 @@ export default function MyServicePage({
 
   async function restartService() {
     if (!data?.restart_url || restarting) return;
-    const proceed = window.confirm('确认要重启该服务吗？重启过程可能需要 10-60 秒。');
+    const proceed = window.confirm(t('service.restart.confirm'));
     if (!proceed) return;
 
     setRestarting(true);
@@ -254,12 +261,12 @@ export default function MyServicePage({
       const rawMsg = payload?.ret_msg || payload?.msg || payload?.message || '';
       setRestartFeedback(
         ok
-          ? `重启触发成功：${rawMsg || '重启请求已提交'}。服务将在后台重启，请于 10-60 秒后刷新或再次查询。`
-          : `重启失败：${rawMsg || '未知错误'}`,
+          ? t('service.restart.success', { message: rawMsg || t('service.restart.submitted') })
+          : t('service.restart.failed', { message: rawMsg || t('common.unknownError') }),
       );
     } catch (err: any) {
       setRestartFeedback(
-        err?.name === 'AbortError' ? '重启超时：请求超过 10 秒' : `重启失败：${err?.message || '未知错误'}`,
+        err?.name === 'AbortError' ? t('service.restart.timeout') : t('service.restart.failed', { message: err?.message || t('common.unknownError') }),
       );
     } finally {
       window.clearTimeout(timeoutId);
@@ -279,15 +286,15 @@ export default function MyServicePage({
         document.execCommand('copy');
         document.body.removeChild(ta);
       }
-      setRestartFeedback(`已复制${label}`);
+      setRestartFeedback(t('service.copy.success', { label }));
     } catch {
-      setRestartFeedback(`复制${label}失败`);
+      setRestartFeedback(t('service.copy.failed', { label }));
     }
   }
 
   const inviteLink = useMemo(() => {
     if (!data?.invitecode || typeof window === 'undefined') return '';
-    return `${window.location.origin}/pricing/?invitecode=${encodeURIComponent(data.invitecode)}`;
+    return `${window.location.origin}${localizedPath('/pricing/', locale)}?invitecode=${encodeURIComponent(data.invitecode)}`;
   }, [data?.invitecode]);
 
   const giftTotal = computeGiftTotalDays(data?.recent_gift_records);
@@ -297,24 +304,24 @@ export default function MyServicePage({
     const exp = new Date(data.expired_at);
     if (Number.isNaN(exp.getTime())) return '';
     const days = Math.ceil((exp.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-    return days >= 0 ? `剩余 ${days} 天` : `已过期 ${Math.abs(days)} 天`;
-  }, [data?.expired_at]);
+    return days >= 0 ? t('service.status.remaining', { days }) : t('service.status.expired', { days: Math.abs(days) });
+  }, [data?.expired_at, t]);
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-10">
-      <section className="rounded-3xl bg-[var(--brand-surface)] p-6 ring-1 ring-slate-200 md:p-8">
-        <h1 className="text-3xl font-bold text-[var(--brand-text)]">我的服务</h1>
-        <p className="mt-3 text-sm leading-7 text-slate-600">
-          查询服务状态、续费、复制邀请链接。支付成功后也可回到这里核对订单。
+    <div lang={locale} className="bg-[var(--marketing-bg)] text-[var(--marketing-text)] mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-10">
+      <section className="rounded-3xl bg-[var(--marketing-surface)] p-6 ring-1 ring-[var(--marketing-border)] md:p-8">
+        <h1 className="text-3xl font-bold text-[var(--marketing-text)]">{t('service.title')}</h1>
+        <p className="mt-3 text-sm leading-7 text-[var(--marketing-muted)]">
+          {t('service.description')}
         </p>
 
-        <label className="mt-6 block text-sm font-medium text-slate-700" htmlFor="service_name">
-          服务地址
+        <label className="mt-6 block text-sm font-medium text-[var(--marketing-text)]" htmlFor="service_name">
+          {t('service.fields.address')}
         </label>
         <input
           id="service_name"
-          className="mt-2 w-full rounded-xl border border-slate-300 px-3 py-2"
-          placeholder="示例: https://device1.xxxxxxxxxxxxxxxx.adguardprivate.com"
+          className="bg-[var(--marketing-surface)] text-[var(--marketing-text)] placeholder:text-[var(--marketing-muted)] mt-2 w-full rounded-xl border border-[var(--marketing-border)] px-3 py-2"
+          placeholder={t('service.query.placeholder')}
           value={serviceName}
           onChange={(event) => setServiceName(event.target.value)}
           onKeyDown={(event) => {
@@ -323,61 +330,67 @@ export default function MyServicePage({
         />
         <button
           id="queryButton"
-          className="mt-4 rounded-xl bg-[var(--brand-primary)] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+          className="mt-4 rounded-xl bg-[var(--marketing-primary)] px-4 py-2 text-sm font-semibold text-[var(--marketing-on-primary)] disabled:opacity-60"
           type="button"
           disabled={querying}
           onClick={() => void queryService()}
         >
-          {querying ? '查询中...' : '立即查询'}
+          {querying ? t('service.query.loading') : t('service.query.action')}
         </button>
-        <p className="mt-3 text-xs leading-6 text-slate-500">
-          支持直接粘贴完整服务链接。本地联调 stage API 可在 URL 加 <code>?api=stage</code>。
+        <p className="mt-3 text-xs leading-6 text-[var(--marketing-muted)]">
+          {t('service.query.hint')}
         </p>
       </section>
 
       {(error || data) && (
-        <section id="query_result" className="rounded-3xl bg-white p-5 ring-1 ring-slate-200">
-          {error ? <p className="text-sm text-rose-600">{error}</p> : null}
+        <section id="query_result" className="rounded-3xl bg-[var(--marketing-surface)] p-5 ring-1 ring-[var(--marketing-border)]">
+          {error ? <p role="alert" className="rounded-lg bg-rose-100 px-3 py-2 text-sm text-rose-900">{error}</p> : null}
           {data ? (
             <div className="space-y-4">
-              <div className="overflow-hidden rounded-2xl border border-slate-200">
+              <div className="overflow-hidden rounded-2xl border border-[var(--marketing-border)]">
                 <table className="w-full text-sm">
                   <tbody>
-                    <InfoRow label="服务名称" value={data.name || ''} onCopy={() => void copyText(data.name || '', '服务名称')} />
-                    <InfoRow label="创建时间" value={formatDateTime(data.created_at)} />
+                    <InfoRow copyLabel={t('common.copy')} label={t('service.fields.name')} value={data.name || ''} onCopy={() => void copyText(data.name || '', t('service.fields.name'))} />
+                    <InfoRow copyLabel={t('common.copy')} label={t('service.fields.createdAt')} value={formatDateTime(data.created_at, locale)} />
                     <InfoRow
-                      label="过期时间"
-                      value={`${formatDateTime(data.expired_at)}${statusText ? `（${statusText}）` : ''}`}
+                      copyLabel={t('common.copy')}
+                      label={t('service.fields.expiredAt')}
+                      value={statusText ? t('service.status.date', { date: formatDateTime(data.expired_at, locale), status: statusText }) : formatDateTime(data.expired_at, locale)}
                     />
                     <InfoRow
-                      label="服务地址"
+                      copyLabel={t('common.copy')}
+                      label={t('service.fields.address')}
                       value={data.url || ''}
                       href={data.url ? `https://${data.url}` : undefined}
-                      onCopy={() => void copyText(data.url || '', '服务地址')}
+                      onCopy={() => void copyText(data.url || '', t('service.fields.address'))}
                     />
-                    <InfoRow label="订单ID" value={data.payment_id || ''} onCopy={() => void copyText(data.payment_id || '', '订单ID')} />
+                    <InfoRow copyLabel={t('common.copy')} label={t('service.fields.orderId')} value={data.payment_id || ''} onCopy={() => void copyText(data.payment_id || '', t('service.fields.orderId'))} />
                     <InfoRow
-                      label="支付ID"
+                      copyLabel={t('common.copy')}
+                      label={t('service.fields.paymentId')}
                       value={data.vendor_payment_id || ''}
-                      onCopy={() => void copyText(data.vendor_payment_id || '', '支付ID')}
+                      onCopy={() => void copyText(data.vendor_payment_id || '', t('service.fields.paymentId'))}
                     />
-                    <InfoRow label="服务类型" value={data.type === 'family' ? '家庭版' : '个人版'} />
+                    <InfoRow copyLabel={t('common.copy')} label={t('service.fields.type')} value={data.type === 'family' ? t('plans.family') : t('plans.personal')} />
                     {inviteLink ? (
-                      <InfoRow label="专属邀请链接" value={inviteLink} onCopy={() => void copyText(inviteLink, '邀请链接')} />
+                      <InfoRow copyLabel={t('common.copy')} label={t('service.fields.inviteLink')} value={inviteLink} onCopy={() => void copyText(inviteLink, t('service.inviteLink'))} />
                     ) : null}
-                    {giftTotal > 0 ? <InfoRow label="累计赠送时长" value={`${giftTotal} 天`} /> : null}
+                    {giftTotal > 0 ? <InfoRow copyLabel={t('common.copy')} label={t('service.fields.giftTotal')} value={t('common.days', { days: giftTotal })} /> : null}
                   </tbody>
                 </table>
               </div>
 
               {Array.isArray(data.recent_gift_records) && data.recent_gift_records.length > 0 ? (
                 <div>
-                  <h2 className="text-sm font-semibold text-slate-800">近期赠送记录</h2>
-                  <ul className="mt-2 space-y-2 text-sm text-slate-600">
+                  <h2 className="text-sm font-semibold text-[var(--marketing-text)]">{t('service.gifts.title')}</h2>
+                  <ul className="mt-2 space-y-2 text-sm text-[var(--marketing-muted)]">
                     {data.recent_gift_records.map((item, index) => (
-                      <li key={`${item.gift_source_order_id || index}`} className="rounded-xl bg-slate-50 px-3 py-2">
-                        {formatDateTime(item.created_at)} - 赠送 <strong>{Number(item.period) || 0} 天</strong>
-                        {item.gift_source_order_id ? `（来源订单: ${item.gift_source_order_id}）` : ''}
+                      <li key={`${item.gift_source_order_id || index}`} className="rounded-xl bg-[var(--marketing-surface)] px-3 py-2">
+                        {t('service.gifts.record', {
+                          date: formatDateTime(item.created_at, locale),
+                          days: Number(item.period) || 0,
+                          source: item.gift_source_order_id ? t('service.gifts.source', { orderId: item.gift_source_order_id }) : '',
+                        })}
                       </li>
                     ))}
                   </ul>
@@ -386,39 +399,40 @@ export default function MyServicePage({
 
               <div className="flex flex-wrap items-center gap-3">
                 <select
-                  className="rounded-xl border border-slate-300 px-3 py-2 text-sm"
+                  aria-label={t('service.renew.duration')}
+                  className="bg-[var(--marketing-surface)] text-[var(--marketing-text)] placeholder:text-[var(--marketing-muted)] rounded-xl border border-[var(--marketing-border)] px-3 py-2 text-sm"
                   value={renewPeriod}
                   onChange={(event) => setRenewPeriod(event.target.value)}
                 >
                   {renewOptions.map((option) => (
                     <option key={option.id} value={option.id}>
-                      {option.label}
+                      {t(`renew.${option.id}.label`)}
                     </option>
                   ))}
                 </select>
                 <button
                   type="button"
-                  className="rounded-xl bg-[var(--brand-primary)] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+                  className="rounded-xl bg-[var(--marketing-primary)] px-4 py-2 text-sm font-semibold text-[var(--marketing-on-primary)] disabled:opacity-60"
                   disabled={renewing}
                   onClick={() => void submitRenew()}
                 >
-                  {renewing ? '续费中...' : '续费'}
+                  {renewing ? t('service.renew.loading') : t('service.renew.action')}
                 </button>
                 {data.restart_url ? (
                   <button
                     type="button"
-                    className="rounded-xl bg-rose-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+                    className="rounded-xl bg-[var(--marketing-primary)] px-4 py-2 text-sm font-semibold text-[var(--marketing-on-primary)] disabled:opacity-60"
                     disabled={restarting}
                     onClick={() => void restartService()}
                   >
-                    {restarting ? '重启中...' : '重启'}
+                    {restarting ? t('service.restart.loading') : t('service.restart.action')}
                   </button>
                 ) : null}
-                <a className="rounded-xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700" href="/pricing/">
-                  去新购
+                <a className="rounded-xl bg-[var(--marketing-soft)] px-4 py-2 text-sm font-semibold text-[var(--marketing-text)]" href={localizedPath('/pricing/', locale)}>
+                  {t('service.buy')}
                 </a>
               </div>
-              {restartFeedback ? <p className="text-sm text-slate-600">{restartFeedback}</p> : null}
+              {restartFeedback ? <p role="status" className="text-sm text-[var(--marketing-text)]">{restartFeedback}</p> : null}
             </div>
           ) : null}
         </section>
@@ -427,20 +441,20 @@ export default function MyServicePage({
       {showFrame ? (
         <iframe
           id="paymentFrame"
-          title="支付宝支付页面"
+          title={t('common.paymentFrame')}
           className="min-h-[600px] w-full max-w-[800px] border-0"
           srcDoc={frameHtml}
         />
       ) : null}
 
-      <section className="rounded-3xl bg-slate-50 p-5 text-sm leading-7 text-slate-700 ring-1 ring-slate-200">
-        <h3 className="text-base font-semibold text-slate-900">购买后的回流路径</h3>
+      <section className="rounded-3xl bg-[var(--marketing-surface)] p-5 text-sm leading-7 text-[var(--marketing-text)] ring-1 ring-[var(--marketing-border)]">
+        <h3 className="text-base font-semibold text-[var(--marketing-text)]">{t('service.return.title')}</h3>
         <ol className="mt-2 list-decimal space-y-1 pl-5">
-          <li>在定价页完成支付。</li>
-          <li>支付宝回跳到后端成功页，展示账号密码与控制台链接。</li>
-          <li>回到本页，用服务名查询状态、续费或复制邀请链接。</li>
+          <li>{t('service.return.pay')}</li>
+          <li>{t('service.return.credentials')}</li>
+          <li>{t('service.return.query')}</li>
         </ol>
-        <p className="mt-3 text-xs text-slate-500">当前 API: {endpoint}</p>
+        <p className="mt-3 text-xs text-[var(--marketing-muted)]">{t('service.api', { endpoint })}</p>
       </section>
     </div>
   );
@@ -451,27 +465,29 @@ function InfoRow({
   value,
   href,
   onCopy,
+  copyLabel,
 }: {
   label: string;
   value: string;
   href?: string;
   onCopy?: () => void;
+  copyLabel: string;
 }) {
   return (
-    <tr className="border-b border-slate-100 last:border-b-0">
-      <td className="w-28 whitespace-nowrap px-3 py-3 text-slate-500">{label}</td>
+    <tr className="border-b border-[var(--marketing-border)] last:border-b-0">
+      <td className="w-28 whitespace-nowrap px-3 py-3 text-[var(--marketing-muted)]">{label}</td>
       <td className="px-3 py-3">
         <div className="flex flex-wrap items-center gap-2">
           {href ? (
-            <a className="rounded-md bg-slate-50 px-2 py-1 font-mono text-xs" href={href} target="_blank" rel="noreferrer">
+            <a className="rounded-md bg-[var(--marketing-surface)] px-2 py-1 font-mono text-xs" href={href} target="_blank" rel="noreferrer">
               {value}
             </a>
           ) : (
-            <span className="rounded-md bg-slate-50 px-2 py-1 font-mono text-xs">{value}</span>
+            <span className="rounded-md bg-[var(--marketing-surface)] px-2 py-1 font-mono text-xs">{value}</span>
           )}
           {onCopy ? (
-            <button type="button" className="rounded-md border border-slate-200 px-2 py-1 text-xs" onClick={onCopy}>
-              复制
+            <button type="button" className="rounded-md border border-[var(--marketing-border)] px-2 py-1 text-xs" onClick={onCopy}>
+              {copyLabel}
             </button>
           ) : null}
         </div>

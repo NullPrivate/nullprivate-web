@@ -2,13 +2,20 @@
 import PricingPage from '../../components/pricing/PricingPage';
 import MarketingLayout from '../../layouts/MarketingLayout.astro';
 import { getBrand } from '../../lib/brand';
+import { getMessages } from '../../lib/i18n';
+import type { Locale } from '../../lib/site';
 
+interface Props { locale?: Locale }
+const { locale = 'zh-cn' } = Astro.props;
+const { common, commerce } = getMessages(locale);
 const brand = getBrand();
 ---
 
-<MarketingLayout title="购买宁屏服务" description="无需注册, 尊重隐私. 适合个人和家庭的多台设备使用的 宁屏服务.">
+<MarketingLayout locale={locale} title={common.pricingTitle} description={common.pricingDescription}>
   <PricingPage
     client:load
+    locale={locale}
+    messages={commerce}
     apiBase={brand.apiBase}
     stageApiBase={brand.stageApiBase}
     stageHost={brand.stageHost}

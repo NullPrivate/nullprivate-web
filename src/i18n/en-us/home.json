@@ -1,0 +1,172 @@
+{
+  "metadata": {
+    "title": "Ad Blocking, Privacy Protection, and Family Internet Management",
+    "description": "{brandName} filters ads and tracking domains via encrypted DNS, supporting custom rules, family schedule management, and multi-platform access. Explore our protective capabilities and choose the plan that best fits your needs."
+  },
+  "hero": {
+    "eyebrow": "{brandName} · Protect Privacy, Safeguard Family",
+    "title": "A cleaner internet, greater peace of mind for your family.",
+    "description": "Reduce ads and tracking starting with a single DNS query. With customizable filtering rules and internet schedule management, create a cleaner online space for you and your family.",
+    "primaryLabel": "Choose a Plan",
+    "secondaryLabel": "View Setup Guide",
+    "benefitsLabel": "Key Features",
+    "benefits": ["Encrypted DNS", "Custom Filtering", "Multi-Platform Access"]
+  },
+  "diagram": {
+    "caption": "One Query, Complete Protection",
+    "label": "How It Works",
+    "devices": ["Phones", "Computers", "Tablets"],
+    "connection": "DoH / DoT Encrypted Query",
+    "title": "{brandName} DNS Filtering",
+    "description": "Processed according to your chosen rules",
+    "results": [
+      { "label": "Normal Website Requests", "action": "Allow", "allowed": true },
+      { "label": "Known Ad & Tracking Domains", "action": "Filter", "allowed": false },
+      { "label": "Risky Domains Matched by Rules", "action": "Block", "allowed": false }
+    ],
+    "note": "Illustrates the working principle only; actual results depend on configuration and rules."
+  },
+  "featuresSection": {
+    "eyebrow": "Protection One Step Ahead",
+    "title": "More than fewer ads—take back control.",
+    "description": "Filter at the DNS resolution stage to keep the content you want and cut down unnecessary requests.",
+    "note": "Protection has limits: DNS filtering cannot independently remove ads hosted on shared domains with normal content, nor can it replace security software or open family communication."
+  },
+  "features": [
+    {
+      "number": "01",
+      "title": "Fewer Ads, Greater Clarity",
+      "description": "Block known ad domains during DNS resolution to reduce ad requests across websites and apps, keeping your focus on the content itself.",
+      "label": "Learn About Ad Blocking",
+      "href": "/docs/feature/adblock/"
+    },
+    {
+      "number": "02",
+      "title": "Reduce Tracking, Reclaim Privacy",
+      "description": "Filter known tracking domains to minimize unnecessary data collection. Encrypt queries between your device and DNS services via DoH / DoT.",
+      "label": "Learn About Privacy Protection",
+      "href": "/docs/feature/privacy/"
+    },
+    {
+      "number": "03",
+      "title": "An Extra Layer of Protection for Family",
+      "description": "Combine content filtering with schedule management to restrict known adult, malicious websites, and specific services, helping family members build healthier online habits.",
+      "label": "Learn About Schedule Management",
+      "href": "/docs/feature/schedule/"
+    }
+  ],
+  "familySection": {
+    "eyebrow": "One Family, Tailored Settings",
+    "title": "Every family member has their own online rhythm.",
+    "description": "Private services support on-demand rule adjustments, making protection adapt to your life rather than forcing your life to adapt to settings."
+  },
+  "scenarios": [
+    {
+      "title": "Your Devices, Your Habits",
+      "text": "View access and block logs, and adjust rules as needed. If frequently visited websites are mistakenly blocked, easily add allowlist rules.",
+      "tag": "Custom Rules",
+      "href": "/docs/feature/custom-rules/",
+      "label": "Learn About Custom Rules"
+    },
+    {
+      "title": "Kids' Screen Time, Agreed Together",
+      "text": "Set rules across different devices, managing access hours for specific services around weekday and weekend schedules so tools support family agreements.",
+      "tag": "Internet Schedules",
+      "href": "/docs/feature/schedule/",
+      "label": "Learn About Internet Schedules"
+    },
+    {
+      "title": "Daily Browsing for Seniors, More Peace of Mind",
+      "text": "Configure ad and malicious domain filtering for family members to reduce exposure to known risky sites, paired with everyday fraud prevention awareness.",
+      "tag": "Malicious Website Filtering",
+      "href": "/docs/feature/malware/",
+      "label": "Learn About Malicious Website Filtering"
+    }
+  ],
+  "setupSection": {
+    "eyebrow": "Start with Your First Device",
+    "title": "Three Steps to Bring Protection into Daily Life",
+    "description": "Ready to use once device setup is complete. Refer to platform guides for OS support details and specific instructions.",
+    "platformsLabel": "View Setup Guides by Device",
+    "platformsPrompt": "Select Your Device"
+  },
+  "steps": [
+    {
+      "title": "Choose the Right Service",
+      "text": "Opt for a private service if you need dedicated rules and access logs, or explore the basic filtering of our public service first.",
+      "href": "/pricing/",
+      "label": "View Plans"
+    },
+    {
+      "title": "Configure Encrypted DNS on Your Device",
+      "text": "Follow platform-specific guides to enter the service address or install a configuration profile to connect your device.",
+      "href": "/docs/startup/config/",
+      "label": "View Setup Guide"
+    },
+    {
+      "title": "Adjust Rules to Fit Your Habits",
+      "text": "View query logs, configure filter lists, allow rules, and internet schedules in the private service dashboard.",
+      "href": "/docs/startup/dashboard/",
+      "label": "Explore the Dashboard"
+    }
+  ],
+  "platforms": [
+    { "name": "Android", "slug": "android" },
+    { "name": "iPhone / iPad", "slug": "iphone" },
+    { "name": "Windows", "slug": "windows" },
+    { "name": "macOS", "slug": "macos" },
+    { "name": "Browser", "slug": "browser" }
+  ],
+  "faqSection": {
+    "eyebrow": "Learn First, Choose Wisely",
+    "title": "Frequently Asked Questions",
+    "description": "Clear answers on performance, differences, and usage.",
+    "label": "View All FAQs"
+  },
+  "faqs": [
+    {
+      "question": "Can it block all ads?",
+      "answer": "DNS filtering operates at the domain level, making it ideal for blocking dedicated ad and tracking domains. Ads sharing domains with normal content and certain embedded video ads may not be filtered independently. Actual performance depends on applications, device configuration, and applied rules.",
+      "href": "/docs/feature/adblock/",
+      "label": "View Filtering Principles"
+    },
+    {
+      "question": "What is the difference between public and private services?",
+      "answer": "The public service uses standardized rules, suitable for basic ad blocking and privacy protection. The private service provides query logs, block analytics, and custom rules, catering to users who need personalized filtering and family management. Specific features are subject to plan details.",
+      "href": "/docs/startup/free/",
+      "label": "Learn About Public Service"
+    },
+    {
+      "question": "Is setup required after purchase?",
+      "answer": "Yes. After purchase and activation, follow the device guide to configure encrypted DNS, then fine-tune filtering rules to your needs. Setup steps may vary across OS versions; please check device compatibility first.",
+      "href": "/docs/startup/config/",
+      "label": "View Device Setup"
+    },
+    {
+      "question": "What if a normal website or app is mistakenly blocked?",
+      "answer": "With the private service, you can locate the relevant domain in query logs and add an allowlist rule. For temporary access, pause the encrypted DNS setting on your device and re-enable it after troubleshooting.",
+      "href": "/docs/faq/how-to-solve-unwanted-block/",
+      "label": "View Troubleshooting Steps"
+    },
+    {
+      "question": "Is encrypted DNS equivalent to a VPN or complete security?",
+      "answer": "No. DoH / DoT only encrypts queries between your device and the DNS service; it does not proxy all network traffic. Domain filtering also cannot replace fraud awareness, security software, or open family communication.",
+      "href": "/docs/tutorial/dns-basics/",
+      "label": "Learn DNS Basics"
+    }
+  ],
+  "openSource": {
+    "eyebrow": "Open Source, Built Together",
+    "title": "Explore Our Protection from the Source Code",
+    "description": "Visit the {brandName} GitHub repository to view source code, join discussions, or read the documentation to learn more about our open-source project.",
+    "repositoryLabel": "View Source & Join Discussions",
+    "docsLabel": "Learn About Open Source"
+  },
+  "closing": {
+    "eyebrow": "Keep Control in Your Hands",
+    "title": "Fewer Distractions, Starting Today",
+    "description": "Choose a private service for dedicated rules, or start with our public service for basic filtering.",
+    "primaryLabel": "View Plans & Pricing",
+    "secondaryLabel": "Learn About Free Public Service"
+  }
+}

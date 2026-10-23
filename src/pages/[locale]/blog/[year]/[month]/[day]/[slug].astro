@@ -1,0 +1,17 @@
+---
+import BlogArticle from '../../../../../../components/marketing/BlogArticle.astro';
+import { getBlogStaticPaths, type BlogEntry } from '../../../../../../lib/blog';
+import { defaultLocale, locales, type Locale } from '../../../../../../lib/site';
+
+export async function getStaticPaths() {
+  const paths = await Promise.all(locales.filter((locale) => locale !== defaultLocale).map(async (locale) =>
+    (await getBlogStaticPaths(locale)).map((path) => ({ ...path, params: { ...path.params, locale } })),
+  ));
+  return paths.flat();
+}
+
+interface Props { post: BlogEntry; locale: Locale }
+const { post, locale } = Astro.props;
+---
+
+<BlogArticle post={post} locale={locale} />

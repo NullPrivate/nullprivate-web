@@ -1,0 +1,44 @@
+---
+import MarketingLayout from '../../layouts/MarketingLayout.astro';
+import { blogPermalink, formatBlogDate, getBlogEntries, parseBlogDate } from '../../lib/blog';
+import { getMessages } from '../../lib/i18n';
+import type { Locale } from '../../lib/site';
+
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+const { common } = getMessages(locale);
+const posts = (await getBlogEntries(locale)).filter((post) => blogPermalink(post));
+---
+
+<MarketingLayout locale={locale} title={common.blog} description={common.blogDescription}>
+  <section class="blog-index" aria-labelledby="blog-title">
+    <header>
+      <h1 id="blog-title">{common.blog}</h1>
+      <p>{common.blogDescription}</p>
+    </header>
+    <div class="blog-posts">
+      {posts.map((post) => (
+        <article class="blog-card">
+          <p class="published"><span>{common.publishedOn}</span> <time datetime={parseBlogDate(post.data.pubDate)?.toISOString()}>{formatBlogDate(post, locale)}</time></p>
+          <h2><a href={blogPermalink(post)!}>{post.data.title}</a></h2>
+          {post.data.description && <p class="description">{post.data.description}</p>}
+          <a class="read-article" href={blogPermalink(post)!} aria-label={`${common.readArticle}: ${post.data.title}`}>{common.readArticle}<span aria-hidden="true"> →</span></a>
+        </article>
+      ))}
+    </div>
+  </section>
+</MarketingLayout>
+
+<style>
+  .blog-index { max-width: 960px; margin: auto; padding: 64px 24px 80px; color: var(--marketing-text); }
+  header { margin-bottom: 36px; }
+  h1 { font-size: clamp(2rem, 5vw, 3rem); font-weight: 750; line-height: 1.2; }
+  header p, .description { color: var(--marketing-muted); line-height: 1.8; margin-top: 16px; }
+  .blog-posts { display: grid; gap: 20px; }
+  .blog-card { min-width: 0; padding: 28px; border: 1px solid var(--marketing-border); border-radius: 24px; background: var(--marketing-surface); overflow-wrap: anywhere; }
+  .published { color: var(--marketing-muted); font-size: .85rem; }
+  h2 { font-size: 1.4rem; font-weight: 700; line-height: 1.5; margin-top: 12px; }
+  h2 a:hover, .read-article:hover { text-decoration: underline; text-underline-offset: 4px; }
+  .read-article { display: inline-flex; align-items: center; min-height: 44px; gap: 8px; margin-top: 16px; color: var(--marketing-primary); font-weight: 600; }
+  @media (max-width: 600px) { .blog-index { padding: 40px 20px 56px; } .blog-card { padding: 20px; } }
+</style>

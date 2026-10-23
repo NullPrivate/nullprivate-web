@@ -1,0 +1,172 @@
+{
+  "metadata": {
+    "title": "广告过滤、隐私保护与家庭上网管理",
+    "description": "{brandName}通过加密 DNS 提供广告与跟踪域名过滤，支持自定义规则、家庭上网时段管理和多平台接入。了解防护能力，选择适合自己的服务。"
+  },
+  "hero": {
+    "eyebrow": "{brandName} · 保护隐私，守护家人",
+    "title": "让上网更清净，让家人更安心。",
+    "description": "从一次 DNS 查询开始，减少广告与跟踪。用可自定义的过滤规则和上网时段管理，为自己和家人留一片清净的网络空间。",
+    "primaryLabel": "选择适合的套餐",
+    "secondaryLabel": "查看接入指南",
+    "benefitsLabel": "服务特点",
+    "benefits": ["加密 DNS", "自定义过滤", "多平台接入"]
+  },
+  "diagram": {
+    "caption": "一次查询，一道防护",
+    "label": "原理示意",
+    "devices": ["手机", "电脑", "平板"],
+    "connection": "DoH / DoT 加密查询",
+    "title": "{brandName} DNS 过滤",
+    "description": "按你选择的规则处理",
+    "results": [
+      { "label": "正常网站请求", "action": "放行", "allowed": true },
+      { "label": "已知广告与跟踪域名", "action": "过滤", "allowed": false },
+      { "label": "规则内的风险域名", "action": "拦截", "allowed": false }
+    ],
+    "note": "仅展示处理原理，实际效果取决于配置与规则。"
+  },
+  "featuresSection": {
+    "eyebrow": "把防护放在更早一步",
+    "title": "不只是少看广告，更是多一点掌控。",
+    "description": "在域名解析环节做过滤，把想看的内容留下，让不必要的请求少一些。",
+    "note": "防护有边界：DNS 过滤无法单独移除与正常内容共用域名的广告，也不能替代安全软件或家庭沟通。"
+  },
+  "features": [
+    {
+      "number": "01",
+      "title": "少一些广告，多一些清净",
+      "description": "在 DNS 解析环节拦截已知广告域名，减少网页与应用中的广告请求，让注意力回到内容本身。",
+      "label": "了解广告过滤",
+      "href": "/docs/feature/adblock/"
+    },
+    {
+      "number": "02",
+      "title": "减少跟踪，留住私人空间",
+      "description": "过滤已知跟踪域名，减少不必要的数据收集。通过 DoH / DoT 加密设备与 DNS 服务之间的查询。",
+      "label": "了解隐私保护",
+      "href": "/docs/feature/privacy/"
+    },
+    {
+      "number": "03",
+      "title": "为家人，多一道防护",
+      "description": "结合内容过滤与上网时段管理，限制已知成人、恶意网站及指定服务，帮助家人建立更健康的上网习惯。",
+      "label": "了解时段管理",
+      "href": "/docs/feature/schedule/"
+    }
+  ],
+  "familySection": {
+    "eyebrow": "一份关心，不同的设置",
+    "title": "每位家人，都有自己的上网节奏。",
+    "description": "私有服务支持按需调整规则，让防护适应生活，而不是让生活迁就设置。"
+  },
+  "scenarios": [
+    {
+      "title": "自己的设备，按自己的习惯",
+      "text": "查看访问与拦截记录，按需调整规则。常用网站遇到误拦截时，可以添加放行规则。",
+      "tag": "自定义规则",
+      "href": "/docs/feature/custom-rules/",
+      "label": "了解自定义规则"
+    },
+    {
+      "title": "孩子的上网时间，一起约定",
+      "text": "为不同设备设置规则，结合工作日与周末作息管理指定服务的可用时段，让工具配合家庭约定。",
+      "tag": "上网时段",
+      "href": "/docs/feature/schedule/",
+      "label": "了解上网时段"
+    },
+    {
+      "title": "长辈的日常使用，多些安心",
+      "text": "为家人配置广告与恶意域名过滤，减少接触已知风险网站的机会，搭配日常防骗提醒。",
+      "tag": "恶意网站过滤",
+      "href": "/docs/feature/malware/",
+      "label": "了解恶意网站过滤"
+    }
+  ],
+  "setupSection": {
+    "eyebrow": "从你的第一台设备开始",
+    "title": "三步，把防护带进日常。",
+    "description": "完成设备配置后使用；系统支持情况与具体操作请以平台指南为准。",
+    "platformsLabel": "按设备查看配置指南",
+    "platformsPrompt": "选择你的设备"
+  },
+  "steps": [
+    {
+      "title": "选择适合的服务",
+      "text": "需要独立规则和访问记录，可选择私有服务；也可以先了解公共服务的基础过滤。",
+      "href": "/pricing/",
+      "label": "查看套餐"
+    },
+    {
+      "title": "为设备配置加密 DNS",
+      "text": "按照对应平台的指南，填入服务地址或安装配置文件，完成设备接入。",
+      "href": "/docs/startup/config/",
+      "label": "查看配置指南"
+    },
+    {
+      "title": "按使用习惯调整规则",
+      "text": "在私有服务管理界面查看记录，配置过滤清单、放行规则与上网时段。",
+      "href": "/docs/startup/dashboard/",
+      "label": "了解管理界面"
+    }
+  ],
+  "platforms": [
+    { "name": "Android", "slug": "android" },
+    { "name": "iPhone / iPad", "slug": "iphone" },
+    { "name": "Windows", "slug": "windows" },
+    { "name": "macOS", "slug": "macos" },
+    { "name": "浏览器", "slug": "browser" }
+  ],
+  "faqSection": {
+    "eyebrow": "先了解，再选择",
+    "title": "你可能还想知道",
+    "description": "把效果、差异和使用方式说清楚。",
+    "label": "查看全部常见问题"
+  },
+  "faqs": [
+    {
+      "question": "能拦截所有广告吗？",
+      "answer": "DNS 过滤以域名为单位，适合拦截独立的广告与跟踪域名。与正常内容共用域名的广告、部分视频内嵌广告，可能无法单独过滤。实际效果取决于应用、设备配置与所用规则。",
+      "href": "/docs/feature/adblock/",
+      "label": "查看过滤原理"
+    },
+    {
+      "question": "公共服务和私有服务有什么区别？",
+      "answer": "公共服务使用统一规则，适合基础广告过滤与隐私保护。私有服务提供访问记录、拦截统计和自定义规则，适合需要个性化过滤与家庭管理的用户。具体权益以套餐说明为准。",
+      "href": "/docs/startup/free/",
+      "label": "了解公共服务"
+    },
+    {
+      "question": "购买后还需要设置吗？",
+      "answer": "需要。购买开通后，请按照设备指南配置加密 DNS，再根据需求调整过滤规则。不同系统版本的接入方式可能不同，建议先查看自己的设备是否支持。",
+      "href": "/docs/startup/config/",
+      "label": "查看设备配置"
+    },
+    {
+      "question": "正常网站或应用被误拦截怎么办？",
+      "answer": "私有服务可通过查询记录定位相关域名，再添加放行规则。需要临时恢复访问时，可以先暂停设备的加密 DNS 设置，排查后再重新启用。",
+      "href": "/docs/faq/how-to-solve-unwanted-block/",
+      "label": "查看排查步骤"
+    },
+    {
+      "question": "加密 DNS 等同于 VPN 或全面防护吗？",
+      "answer": "不等同。DoH / DoT 保护的是设备与 DNS 服务之间的查询，并不会代理所有网络流量。域名过滤也不能替代反诈判断、安全软件或家庭沟通。",
+      "href": "/docs/tutorial/dns-basics/",
+      "label": "了解 DNS 基础"
+    }
+  ],
+  "openSource": {
+    "eyebrow": "开放源码，一起完善",
+    "title": "从源码开始，了解这份防护。",
+    "description": "访问 {brandName} 的 GitHub 仓库查看源码、参与讨论，或阅读开源文档，了解项目的开源信息。",
+    "repositoryLabel": "查看源码与参与讨论",
+    "docsLabel": "了解开源信息"
+  },
+  "closing": {
+    "eyebrow": "把选择权，留给自己",
+    "title": "从今天起，少一些打扰。",
+    "description": "需要专属规则，选择私有服务；想先了解基础过滤，也有公共服务可用。",
+    "primaryLabel": "查看套餐与价格",
+    "secondaryLabel": "了解免费公共服务"
+  }
+}

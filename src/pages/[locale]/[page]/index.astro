@@ -1,0 +1,19 @@
+---
+import Pricing from '../../pricing/index.astro';
+import MyService from '../../my-service/index.astro';
+import BlogIndex from '../../../components/marketing/BlogIndex.astro';
+import { defaultLocale, locales, type Locale } from '../../../lib/site';
+
+export function getStaticPaths() {
+  return locales.filter((locale) => locale !== defaultLocale).flatMap((locale) =>
+    ['pricing', 'my-service', 'blog'].map((page) => ({ params: { locale, page }, props: { locale, page } })),
+  );
+}
+
+interface Props { locale: Locale; page: 'pricing' | 'my-service' | 'blog' }
+const { locale, page } = Astro.props;
+---
+
+{page === 'pricing' && <Pricing locale={locale} />}
+{page === 'my-service' && <MyService locale={locale} />}
+{page === 'blog' && <BlogIndex locale={locale} />}

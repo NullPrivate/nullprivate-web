@@ -1,27 +1,5 @@
 ---
-import MarketingLayout from '../../layouts/MarketingLayout.astro';
-import { blogPermalink, getBlogEntries } from '../../lib/blog';
-
-const posts = await getBlogEntries('zh-cn');
+import BlogIndex from '../../components/marketing/BlogIndex.astro';
 ---
 
-<MarketingLayout title="博客" description="NullPrivate 技术分享与产品更新">
-  <div class="mx-auto max-w-4xl px-4 py-10">
-    <h1 class="text-3xl font-bold text-[var(--brand-text)]">博客</h1>
-    <p class="mt-3 text-slate-600">按现网日期 permalink 输出：`/blog/:year/:month/:day/:slug/`。</p>
-    <div class="mt-8 space-y-4">
-      {posts.map((post) => {
-        const href = blogPermalink(post);
-        return (
-          <article class="rounded-3xl bg-[var(--brand-surface)] p-5 ring-1 ring-slate-200">
-            <h2 class="text-xl font-semibold text-[var(--brand-text)]">
-              {href ? <a href={href}>{post.data.title}</a> : post.data.title}
-            </h2>
-            {post.data.description ? <p class="mt-2 text-sm leading-6 text-slate-600">{post.data.description}</p> : null}
-            {post.data.pubDate ? <p class="mt-2 text-xs text-slate-500">{String(post.data.pubDate)}</p> : null}
-          </article>
-        );
-      })}
-    </div>
-  </div>
-</MarketingLayout>
+<BlogIndex locale="zh-cn" />

@@ -16,6 +16,8 @@ pnpm-debug.log*
 # environment variables
 .env
 .env.production
+.translation-cache/
+project.translation.json
 
 # macOS-specific files
 .DS_Store

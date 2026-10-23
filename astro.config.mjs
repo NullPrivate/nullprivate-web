@@ -23,6 +23,8 @@ export default defineConfig({
   integrations: [
     starlight({
       title: brand.siteName,
+      logo: { src: './public/favicon.svg', alt: '', replacesTitle: false },
+      favicon: '/favicon.svg',
       description: brand.description,
       defaultLocale: 'root',
       locales: {

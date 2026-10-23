@@ -1,25 +1,97 @@
 ---
 import { getBrand } from '../lib/brand';
+import NavIcon from '../components/marketing/NavIcon.astro';
+import { Icon } from '@astrojs/starlight/components';
+import { displayBrandName, getMessages, languageTags, localizedPath, unlocalizedPath } from '../lib/i18n';
+import { locales, localeLabels, type Locale } from '../lib/site';
 import '../styles/global.css';
+import '../styles/marketing.css';
 
 interface Props {
   title: string;
   description?: string;
+  locale?: Locale;
+  alternates?: Partial<Record<Locale, string>>;
 }
 
 const brand = getBrand();
-const { title, description = brand.description } = Astro.props;
-const pageTitle = title.includes(brand.siteName) ? title : `${title} | ${brand.siteName}`;
+const { title, description = brand.description, locale = 'zh-cn', alternates } = Astro.props;
+const t = getMessages(locale).common;
+const brandName = displayBrandName(locale, brand.siteName);
+const pageTitle = title.includes(brandName) ? title : `${title} | ${brandName}`;
+const pathname = unlocalizedPath(Astro.url.pathname);
+const isArticle = pathname.startsWith('/blog/') && pathname !== '/blog/';
+const languageLinks = locales.map((language) => {
+  const translatedPath = alternates?.[language];
+  const correspondingPath = localizedPath(pathname, language);
+  return {
+    locale: language,
+    href: isArticle ? translatedPath || localizedPath('/blog/', language) : correspondingPath,
+    alternate: isArticle ? translatedPath : correspondingPath,
+    fallback: isArticle && !translatedPath,
+  };
+});
+const navigation = [
+  { name: 'docs', label: t.docs, href: localizedPath('/docs/', locale) },
+  { name: 'blog', label: t.blog, href: localizedPath('/blog/', locale) },
+  { name: 'pricing', label: t.pricing, href: localizedPath('/pricing/', locale) },
+  { name: 'service', label: t.service, href: localizedPath('/my-service/', locale) },
+  { name: 'lists', label: t.lists, href: 'https://list.adguardprivate.com/' },
+] as const;
 ---
 
 <!doctype html>
-<html lang="zh-CN">
+<html lang={languageTags[locale]} data-marketing data-theme="light">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script is:inline>
+      (() => {
+        const key = 'starlight-theme';
+        const system = window.matchMedia('(prefers-color-scheme: dark)');
+        const normalize = (value) => value === 'light' || value === 'dark' ? value : 'auto';
+        let preference = 'auto';
+        try { preference = normalize(localStorage.getItem(key)); } catch {}
+        const applyTheme = () => {
+          document.documentElement.dataset.theme = preference === 'auto'
+            ? (system.matches ? 'dark' : 'light') : preference;
+          const select = document.getElementById('theme-select');
+          if (select) select.value = preference;
+        };
+        applyTheme();
+        system.addEventListener('change', applyTheme);
+        window.addEventListener('storage', (event) => {
+          if (event.key === key || event.key === null) {
+            preference = normalize(event.newValue);
+            applyTheme();
+          }
+        });
+        document.addEventListener('DOMContentLoaded', () => {
+          applyTheme();
+          document.getElementById('theme-select')?.addEventListener('change', (event) => {
+            preference = normalize(event.target.value);
+            try { localStorage.setItem(key, preference === 'auto' ? '' : preference); } catch {}
+            applyTheme();
+          });
+          const language = document.getElementById('language-select');
+          document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && language?.open) {
+              language.open = false;
+              language.querySelector('summary')?.focus();
+            }
+          });
+          document.addEventListener('click', (event) => {
+            if (language?.open && !language.contains(event.target)) language.open = false;
+          });
+        }, { once: true });
+      })();
+    </script>
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
-    <link rel="canonical" href={new URL(Astro.url.pathname, brand.siteUrl).toString()} />
+    <link rel="canonical" href={new URL(localizedPath(pathname, locale), brand.siteUrl).toString()} />
+    {languageLinks.filter((link) => link.alternate).map((link) => (
+      <link rel="alternate" hreflang={languageTags[link.locale]} href={new URL(link.alternate!, brand.siteUrl).toString()} />
+    ))}
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <script is:inline define:vars={{ gaId: brand.gaId }}>
       window.dataLayer = window.dataLayer || [];
@@ -29,43 +101,43 @@ const pageTitle = title.includes(brand.siteName) ? title : `${title} | ${brand.s
       gtag('config', gaId);
     </script>
     <script async src={`https://www.googletagmanager.com/gtag/js?id=${brand.gaId}`}></script>
-    <style define:vars={{
-      brandPrimary: brand.theme.primary,
-      brandPrimarySoft: brand.theme.primarySoft,
-      brandAccent: brand.theme.accent,
-      brandSurface: brand.theme.surface,
-      brandText: brand.theme.text,
-    }}>
-      :root {
-        --brand-primary: var(--brandPrimary);
-        --brand-primary-soft: var(--brandPrimarySoft);
-        --brand-accent: var(--brandAccent);
-        --brand-surface: var(--brandSurface);
-        --brand-text: var(--brandText);
-      }
-    </style>
   </head>
-  <body class="min-h-screen bg-white text-slate-900 antialiased">
-    <header class="border-b border-slate-200/80 bg-white/90 backdrop-blur">
-      <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4">
-        <a href="/" class="text-lg font-bold text-[var(--brand-text)]">{brand.siteName}</a>
-        <nav class="flex flex-wrap items-center gap-4 text-sm font-medium text-slate-700">
-          <a href="/docs/">文档</a>
-          <a href="/blog/">博客</a>
-          <a href="/pricing/">购买</a>
-          <a href="/my-service/">我的服务</a>
-          <a href="https://list.adguardprivate.com/" rel="noreferrer" target="_blank">清单平台</a>
+  <body>
+    <a class="skip-link" href="#main-content">{t.skipLink}</a>
+    <header class="marketing-header">
+      <div class="site-header">
+        <div class="header-top">
+          <a href={localizedPath('/', locale)} class="site-brand" aria-label={t.homeLabel}><img class="brand-icon" src="/favicon.svg" width="32" height="32" alt="" aria-hidden="true" />{brandName}<span class="brand-divider" aria-hidden="true"></span><span class="brand-caption">{t.siteTagline}</span></a>
+          <div class="header-controls">
+            <details id="language-select" class="language-select">
+              <summary aria-label={`${t.language}: ${localeLabels[locale]}`}><NavIcon name="language" /><span>{localeLabels[locale]}</span></summary>
+              <nav class="language-options" aria-label={t.language}>
+                {languageLinks.map((link) => <a href={link.href} lang={languageTags[link.locale]} hreflang={languageTags[link.locale]} aria-current={link.locale === locale ? 'page' : undefined} title={link.fallback ? t.translationFallback : undefined}>{localeLabels[link.locale]}</a>)}
+              </nav>
+            </details>
+            <div class="theme-control">
+              <label for="theme-select"><NavIcon name="theme" /><span class="visually-hidden">{t.theme}</span></label>
+              <select id="theme-select" name="theme">
+                <option value="auto">{t.system}</option>
+                <option value="light">{t.light}</option>
+                <option value="dark">{t.dark}</option>
+              </select>
+            </div>
+          </div>
+          <a class="github-link" href="https://github.com/NullPrivate/NullPrivate" target="_blank" rel="noreferrer" aria-label={`GitHub · ${t.source}`} title={`GitHub · ${t.source}`}><Icon name="github" size="24px" /></a>
+        </div>
+        <nav aria-label={t.mainNav} class="site-nav">
+          {navigation.map((item) => <a href={item.href} target={item.href.startsWith('https://') ? '_blank' : undefined} rel={item.href.startsWith('https://') ? 'noreferrer' : undefined}><NavIcon name={item.name} />{item.label}</a>)}
         </nav>
       </div>
     </header>
-    <main>
+    <main id="main-content" tabindex="-1">
       <slot />
     </main>
-    <footer class="border-t border-slate-200 bg-slate-50">
-      <div class="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-8 text-sm text-slate-600">
-        <p>{brand.siteName} · {brand.subtitle}</p>
-        <p>{brand.beian}</p>
-        <p class="text-xs text-slate-500">Brand: {brand.id} · GA: {brand.gaId}</p>
+    <footer class="marketing-footer">
+      <div class="site-footer">
+        <div><p class="footer-brand">{brandName} · {t.siteTagline}</p><p class="footer-registration"><a href="https://beian.miit.gov.cn/" target="_blank" rel="noreferrer">{brand.beian}</a></p></div>
+        <nav aria-label={t.footerNav}><a href={localizedPath('/docs/startup/privacy_policy/', locale)}>{t.privacy}</a><a href={localizedPath('/docs/startup/terms-of-service/', locale)}>{t.terms}</a><a href={localizedPath('/docs/faq/how-to-support/', locale)}>{t.support}</a></nav>
       </div>
     </footer>
   </body>

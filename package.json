@@ -13,6 +13,9 @@
     "preview": "astro preview --port 4321",
     "astro": "astro",
     "typecheck": "astro check",
+    "test:homepage": "node --test scripts/test-homepage.mjs",
+    "test:marketing": "node --test scripts/test-marketing.mjs",
+    "translate:marketing": "node scripts/translate-marketing.mjs",
     "migrate:content": "node scripts/migrate-content.mjs --lang zh-cn",
     "migrate:content:all": "node scripts/migrate-content.mjs --lang all",
     "migrate:content:dry": "node scripts/migrate-content.mjs --lang all --dry-run",
@@ -21,6 +24,7 @@
     "upload:aliyun:preview": "npm run build:adguardprivate && node scripts/run-rclone.js sync dist/adguardprivate/ ${OSS_PREVIEW_TARGET:-aliyun_oss_hangzhou:www-adguardprivate-com-astro-preview} --config ${RCLONE_CONFIG:-./rclone.conf} --checksum --fast-list --transfers 8 --checkers 16 -v -P --stats 2s --stats-file-name-length 0"
   },
   "dependencies": {
+    "@astrojs/check": "^0.9.12",
     "@astrojs/react": "^7.1.1",
     "@astrojs/starlight": "^0.42.6",
     "@tailwindcss/vite": "^4.3.3",
@@ -30,6 +34,7 @@
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "sharp": "^0.35.3",
-    "tailwindcss": "^4.3.3"
+    "tailwindcss": "^4.3.3",
+    "typescript": "^6.0.3"
   }
 }
