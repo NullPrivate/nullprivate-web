@@ -12,7 +12,13 @@
     "build:all": "npm run build:nullprivate && npm run build:adguardprivate",
     "preview": "astro preview --port 4321",
     "astro": "astro",
-    "typecheck": "astro check"
+    "typecheck": "astro check",
+    "migrate:content": "node scripts/migrate-content.mjs --lang zh-cn",
+    "migrate:content:all": "node scripts/migrate-content.mjs --lang all",
+    "migrate:content:dry": "node scripts/migrate-content.mjs --lang all --dry-run",
+    "upload:r2:preview": "npm run build:nullprivate && wrangler deploy --config wrangler.jsonc",
+    "upload:r2:preview:adguardprivate": "npm run build:adguardprivate && wrangler deploy --config wrangler.preview.adguardprivate.jsonc",
+    "upload:aliyun:preview": "npm run build:adguardprivate && node scripts/run-rclone.js sync dist/adguardprivate/ ${OSS_PREVIEW_TARGET:-aliyun_oss_hangzhou:www-adguardprivate-com-astro-preview} --config ${RCLONE_CONFIG:-./rclone.conf} --checksum --fast-list --transfers 8 --checkers 16 -v -P --stats 2s --stats-file-name-length 0"
   },
   "dependencies": {
     "@astrojs/react": "^7.1.1",

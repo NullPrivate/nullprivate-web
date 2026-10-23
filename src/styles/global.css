@@ -22,3 +22,40 @@ a {
 code {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
+
+/* Starlight 侧栏：强化分组层级与当前页状态 */
+:root {
+  --sl-color-accent-low: color-mix(in srgb, var(--brand-primary) 18%, white);
+  --sl-color-accent: var(--brand-primary);
+  --sl-color-accent-high: color-mix(in srgb, var(--brand-primary) 72%, black);
+}
+
+starlight-menu-button button,
+nav[aria-label] a,
+.sidebar-content a,
+.sidebar-content summary {
+  cursor: pointer;
+  transition: color 160ms ease, background-color 160ms ease, border-color 160ms ease;
+}
+
+.sidebar-content details > summary {
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.sidebar-content a[aria-current='page'],
+.sidebar-content a[aria-current='true'] {
+  font-weight: 600;
+  border-inline-start: 2px solid var(--brand-primary);
+  padding-inline-start: 0.65rem;
+  background: color-mix(in srgb, var(--brand-primary) 10%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  starlight-menu-button button,
+  nav[aria-label] a,
+  .sidebar-content a,
+  .sidebar-content summary {
+    transition: none;
+  }
+}

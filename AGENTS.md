@@ -42,3 +42,25 @@
 
 - 内容编辑若仍服务现网，继续改 `../www.nullprivate.com/content/zh-cn/`
 - 新站脚手架、组件、构建脚本只在本目录推进
+
+
+## 内容迁移
+
+- `npm run migrate:content`：导入 zh-cn
+- `npm run migrate:content:all`：导入 5 语
+- 源目录：`../www.nullprivate.com/content/<lang>/`
+- 目标：
+  - docs → `src/content/docs[/lang]/docs/**`
+  - blog → `src/content/blog/<lang>/**`
+
+## 上传
+
+- 预览说明见 `docs/DEPLOY-PREVIEW.md`
+- Cloudflare：`wrangler.jsonc` / `wrangler.preview.adguardprivate.jsonc`
+- OSS：复用现网 rclone 二进制与配置，目标默认 preview bucket/prefix
+
+
+## 文档导航
+
+- 文档侧栏使用 `src/config/docs-sidebar.mjs` 手动分组，避免暴露英文目录名。
+- 页面链接显示名取 frontmatter `title` / `sidebar.label`。

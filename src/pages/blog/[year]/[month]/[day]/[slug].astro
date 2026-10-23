@@ -1,0 +1,35 @@
+---
+import { render } from 'astro:content';
+import MarketingLayout from '../../../../../layouts/MarketingLayout.astro';
+import { blogPermalink, blogSlug, getBlogEntries, parseBlogDate } from '../../../../../lib/blog';
+
+export async function getStaticPaths() {
+  const posts = await getBlogEntries('zh-cn');
+  return posts.flatMap((post) => {
+    const date = parseBlogDate(post.data.pubDate);
+    if (!date) return [];
+    return [{
+      params: {
+        year: String(date.getFullYear()),
+        month: String(date.getMonth() + 1).padStart(2, '0'),
+        day: String(date.getDate()).padStart(2, '0'),
+        slug: blogSlug(post),
+      },
+      props: { post },
+    }];
+  });
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+const permalink = blogPermalink(post);
+---
+
+<MarketingLayout title={post.data.title} description={post.data.description || post.data.title}>
+  <article class="mx-auto max-w-3xl px-4 py-10 prose prose-slate">
+    <p class="text-sm text-slate-500">{permalink}</p>
+    <h1>{post.data.title}</h1>
+    {post.data.description ? <p class="lead">{post.data.description}</p> : null}
+    <Content />
+  </article>
+</MarketingLayout>

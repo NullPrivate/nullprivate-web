@@ -616,3 +616,23 @@ nullprivate/
 ```
 
 本蓝图确认后，脚手架初始化应只发生在 `nullprivate-web/`，不直接改现网 Hugo 生产链路。
+
+
+## 18. 执行进度（2026-10-23）
+
+### 已完成
+
+1. Starlight 内容挂载到 `/docs/*`（5 语）
+2. `PricingPage` 对齐现网关键下单流：选套餐、邀请码校验、支付请求、loading、iframe
+3. `scripts/migrate-content.mjs` 支持 zh-cn / all / dry-run，并已导入 5 语
+4. 预览上传：
+   - `upload:r2:preview`
+   - `upload:r2:preview:adguardprivate`
+   - `upload:aliyun:preview`
+5. `build:nullprivate` 已验证通过（含 docs/pricing/blog）
+
+### 待完成
+
+1. `MyServicePage` 完整迁移
+2. 博客图片/附件与多语言 permalink
+3. 生产域名切流与旧 Hugo 下线策略

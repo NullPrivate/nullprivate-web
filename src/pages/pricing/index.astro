@@ -4,51 +4,13 @@ import MarketingLayout from '../../layouts/MarketingLayout.astro';
 import { getBrand } from '../../lib/brand';
 
 const brand = getBrand();
-
-const plans = [
-  {
-    id: '7fcf7e37-7e7c-488d-91eb-0349bdbdcd0b',
-    period: '7天体验版',
-    price: '￥0.1',
-    audience: 'trial' as const,
-    highlight: '先验证效果',
-    features: ['7 天高级功能体验', '5 台设备', 'DoT / DoH(HTTP3)', '72 小时访问记录'],
-    buttonText: '立即体验',
-  },
-  {
-    id: '872e9d54-c5ab-424c-8dcd-426157f07759',
-    period: '7天家庭版体验',
-    price: '￥1',
-    audience: 'trial' as const,
-    highlight: '家庭场景试用',
-    features: ['7 天高级功能体验', '20 台设备', '每台可独立设置规则', '共享每秒 100 次请求'],
-    buttonText: '立即体验',
-  },
-  {
-    id: '4887f197-f25c-49a9-abb2-514b54ce31c8',
-    period: '个人版 1 个月',
-    price: '￥10',
-    audience: 'personal' as const,
-    features: ['5 台设备', '共享每秒 30 次请求', '100w 自定义规则', '适合个人多设备'],
-    buttonText: '购买个人版',
-  },
-  {
-    id: 'family-skeleton-1m',
-    period: '家庭版 1 个月',
-    price: '￥...',
-    audience: 'family' as const,
-    features: ['20 台设备', '每台独立规则', '共享每秒 100 次请求', '完整价格表后续从现网迁移'],
-    buttonText: '购买家庭版',
-  },
-];
 ---
 
-<MarketingLayout title="购买宁屏服务" description="无需注册, 尊重隐私. 适合个人和家庭的多台设备使用的宁屏服务.">
+<MarketingLayout title="购买宁屏服务" description="无需注册, 尊重隐私. 适合个人和家庭的多台设备使用的 宁屏服务.">
   <PricingPage
     client:load
     apiBase={brand.apiBase}
     stageApiBase={brand.stageApiBase}
     stageHost={brand.stageHost}
-    plans={plans}
   />
 </MarketingLayout>

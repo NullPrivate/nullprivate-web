@@ -2,3 +2,11 @@
 /pages/pricing/ /pricing/ 301
 /pages/my-service /my-service/ 301
 /pages/my-service/ /my-service/ 301
+/guides/overview /docs/ 301
+/guides/overview/ /docs/ 301
+/docs/guides/overview /docs/ 301
+/docs/guides/overview/ /docs/ 301
+/reference/stack /docs/ 301
+/reference/stack/ /docs/ 301
+/docs/reference/stack /docs/ 301
+/docs/reference/stack/ /docs/ 301
