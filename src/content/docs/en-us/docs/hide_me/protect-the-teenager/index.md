@@ -1,18 +1,6 @@
 ---
-title: "青少年网络安全保护指南"
----
-
----
-layout: docs
-title: Youth Cyber Protection Guide
-draft: false
-categories: Guide
-tags: [Guide, hide_me, Youth Protection, Anti-Addiction, Cybersecurity]
-date: 2024-10-30 11:17:19 +0800
-toc: false
-comments: false
-weight: 0
-description: Through intelligent management and security protection, create a healthy online environment for teenagers and help them establish good internet habits.
+title: "Youth Cyber Protection Guide"
+description: "Through intelligent management and security protection, create a healthy online environment for teenagers and help them establish good internet habits."
 ---
 
 ## Challenges in Contemporary Youth's Online Environment

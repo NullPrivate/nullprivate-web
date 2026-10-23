@@ -1,18 +1,6 @@
 ---
-title: "保护老年人远离网络诈骗"
----
-
----
-layout: docs
-title: Protecting the Elderly from Online Scams
-draft: false
-categories: Guides
-tags: [Guides, hide_me, Cybersecurity, Elderly Protection, Fraud Prevention]
-date: 2024-10-30 11:02:08 +0800
-toc: false
-comments: false
-weight: 0
-description: A cybersecurity guide for the elderly population, effectively preventing online scams through private service setup and AdGuard protection.
+title: "Protecting the Elderly from Online Scams"
+description: "A cybersecurity guide for the elderly population, effectively preventing online scams through private service setup and AdGuard protection."
 ---
 
 ## Online Risks Faced by the Elderly

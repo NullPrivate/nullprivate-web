@@ -6,6 +6,7 @@
  *   node scripts/migrate-content.mjs --lang zh-cn
  *   node scripts/migrate-content.mjs --lang all
  *   node scripts/migrate-content.mjs --lang zh-cn --dry-run
+ *   node scripts/migrate-content.mjs --assets-only
  */
 import { mkdirSync, readdirSync, readFileSync, statSync, writeFileSync, existsSync, cpSync } from 'node:fs';
 import { dirname, extname, join, relative, sep } from 'node:path';
@@ -19,7 +20,7 @@ const dryRun = args.has('--dry-run');
 const langArgIndex = process.argv.indexOf('--lang');
 const langArg = langArgIndex >= 0 ? process.argv[langArgIndex + 1] : 'zh-cn';
 const locales = ['zh-cn', 'zh-hk', 'en-us', 'ko-kr', 'ja-jp'];
-const selected = langArg === 'all' ? locales : [langArg];
+const selected = args.has('--assets-only') ? [] : langArg === 'all' ? locales : [langArg];
 
 function ensureDir(path) {
   if (!dryRun) mkdirSync(path, { recursive: true });
@@ -195,17 +196,23 @@ for (const locale of selected) {
   }
 }
 
-// 同步 Hugo 静态图片到 Astro public/images，保证文档/博客中的 /images/* 可访问。
-const hugoImages = join(hugoRoot, 'assets', 'images');
-const publicImages = join(root, 'public', 'images');
-if (existsSync(hugoImages)) {
-  console.log(`${dryRun ? 'DRY ' : ''}ASSETS ${relative(root, hugoImages)} -> public/images`);
-  if (!dryRun) {
-    ensureDir(publicImages);
-    cpSync(hugoImages, publicImages, { recursive: true });
+// 保留正文媒体的公开路径，图片与视频由同一资源同步流程维护。
+const assetMappings = [
+  ['assets/images', 'public/images'],
+  ['static/videos', 'public/videos'],
+];
+for (const [source, destination] of assetMappings) {
+  const sourceDir = join(hugoRoot, source);
+  const destinationDir = join(root, destination);
+  if (existsSync(sourceDir)) {
+    console.log(`${dryRun ? 'DRY ' : ''}ASSETS ${relative(root, sourceDir)} -> ${destination}`);
+    if (!dryRun) {
+      ensureDir(destinationDir);
+      cpSync(sourceDir, destinationDir, { recursive: true });
+    }
+  } else {
+    console.warn(`[skip] 缺少资源目录: ${relative(root, sourceDir)}`);
   }
-} else {
-  console.warn(`[skip] 缺少图片目录: ${hugoImages}`);
 }
 
 console.log(`完成: wrote=${wrote}, skipped=${skipped}, dryRun=${dryRun}`);

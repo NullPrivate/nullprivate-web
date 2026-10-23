@@ -1,0 +1,41 @@
+/* 正文列表显式恢复浏览器标记，独立于 Tailwind 的全局重置。
+ * 文档与博客共用规则；not-content 区域继续由各组件控制。
+ */
+:is(.sl-markdown-content, .blog-body) :is(ul, ol):not(:where(.not-content, .not-content *)) {
+  list-style-position: outside;
+  padding-inline-start: 1.75em;
+  margin-block: 1em;
+}
+
+:is(.sl-markdown-content, .blog-body) ul:not(:where(.not-content, .not-content *)) { list-style-type: disc; }
+:is(.sl-markdown-content, .blog-body) ol:not(:where(.not-content, .not-content *)) { list-style-type: decimal; }
+:is(.sl-markdown-content, .blog-body) li ul:not(:where(.not-content, .not-content *)) { list-style-type: circle; }
+:is(.sl-markdown-content, .blog-body) li li ul:not(:where(.not-content, .not-content *)) { list-style-type: square; }
+
+:is(.sl-markdown-content, .blog-body) li:not(:where(.not-content, .not-content *)) {
+  padding-inline-start: .125em;
+  margin-block: .375em;
+  line-height: 1.75;
+  overflow-wrap: anywhere;
+}
+
+:is(.sl-markdown-content, .blog-body) li > :is(ul, ol):not(:where(.not-content, .not-content *)) {
+  margin-block: .375em;
+}
+
+/* 松散列表保留段落间距，首尾段落与紧凑列表保持相同的对齐。 */
+:is(.sl-markdown-content, .blog-body) li > p:not(:where(.not-content, .not-content *)) { margin-block: .5em; }
+:is(.sl-markdown-content, .blog-body) li > p:first-child:not(:where(.not-content, .not-content *)) { margin-top: 0; }
+:is(.sl-markdown-content, .blog-body) li > :last-child:not(:where(.not-content, .not-content *)) { margin-bottom: 0; }
+
+/* GFM 任务项使用原生复选框承载状态，保留同层普通列表项的标记。 */
+:is(.sl-markdown-content, .blog-body) li.task-list-item:not(:where(.not-content, .not-content *)) { list-style-type: none; }
+:is(.sl-markdown-content, .blog-body) .task-list-item input[type='checkbox']:not(:where(.not-content, .not-content *)) {
+  inline-size: 1em;
+  block-size: 1em;
+  min-block-size: 0;
+  margin-block: 0;
+  margin-inline: -1.5em .5em;
+  vertical-align: -.125em;
+  accent-color: var(--sl-color-text-accent, var(--marketing-primary));
+}

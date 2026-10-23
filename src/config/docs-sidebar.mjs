@@ -32,6 +32,15 @@ const platformSlugs = (base) => [
   slug(`${base}/browser`),
 ];
 
+// 专题目录与侧栏共用阅读顺序，文章标题和简介由各语言元数据提供。
+export const privacyGuideSlugs = [
+  'docs/hide_me/protect-the-teenager',
+  'docs/hide_me/protect-the-eld',
+  'docs/hide_me/protect-yourself',
+  'docs/hide_me/hide-yourself',
+  'docs/hide_me/protect-from-the-employee',
+];
+
 export const docsSidebar = [
   group(t('开始使用', '開始使用', 'Getting Started', '시작하기', 'はじめに'), [
     slug('docs'),
@@ -92,11 +101,7 @@ export const docsSidebar = [
 
   group(t('赛博城府', '賽博城府', 'Privacy Guides', '사이버 처세', 'サイバー処世'), [
     slug('docs/hide_me'),
-    slug('docs/hide_me/protect-the-teenager'),
-    slug('docs/hide_me/protect-the-eld'),
-    slug('docs/hide_me/protect-yourself'),
-    slug('docs/hide_me/hide-yourself'),
-    slug('docs/hide_me/protect-from-the-employee'),
+    ...privacyGuideSlugs.map(slug),
   ]),
 
   group(t('基础教程', '基礎教程', 'Basics', '기초 튜토리얼', '基礎チュートリアル'), [

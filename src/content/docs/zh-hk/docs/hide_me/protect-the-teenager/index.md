@@ -1,18 +1,6 @@
 ---
-title: "青少年网络安全保护指南"
----
-
----
-layout: docs
-title: 青少年網絡安全保護指南
-draft: false
-categories: 指南
-tags: [指南, hide_me, 青少年保護, 防沉迷, 網絡安全]
-date: 2024-10-30 11:17:19 +0800
-toc: false
-comments: false
-weight: 0
-description: 透過智能管控和安全防護，為青少年營造健康的網絡環境，幫助其建立良好的上網習慣。
+title: "青少年網絡安全保護指南"
+description: "透過智能管控和安全防護，為青少年營造健康的網絡環境，幫助其建立良好的上網習慣。"
 ---
 
 ## 當代青少年的網絡環境挑戰

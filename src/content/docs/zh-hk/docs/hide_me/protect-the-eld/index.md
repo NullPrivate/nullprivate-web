@@ -1,18 +1,6 @@
 ---
-title: "保护老年人远离网络诈骗"
----
-
----
-layout: docs
-title: 保護老年人遠離網絡詐騙
-draft: false
-categories: 指南
-tags: [指南, hide_me, 網絡安全, 老年人保護, 防詐騙]
-date: 2024-10-30 11:02:08 +0800
-toc: false
-comments: false
-weight: 0
-description: 針對老年人群體的網絡安全指南，通過設置私有服務和AdGuard防護，有效預防網絡詐騙。
+title: "保護老年人遠離網絡詐騙"
+description: "針對老年人群體的網絡安全指南，通過設置私有服務和AdGuard防護，有效預防網絡詐騙。"
 ---
 
 ## 老年人面臨的網絡風險

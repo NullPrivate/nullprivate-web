@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./markdown-lists.css";
 
 :root {
   --brand-primary: #0f766e;
@@ -49,6 +50,32 @@ nav[aria-label] a,
   border-inline-start: 2px solid var(--brand-primary);
   padding-inline-start: 0.65rem;
   background: color-mix(in srgb, var(--brand-primary) 10%, transparent);
+}
+
+/* 文档分页采用辅助导航字号，长标题完整换行并保留整卡点击。 */
+.pagination-links a {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  min-height: 5rem;
+}
+
+.pagination-links a > span {
+  min-width: 0;
+}
+
+.pagination-links .link-title {
+  display: inline-block;
+  margin-top: 0.25rem;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
+.pagination-links a:focus-visible {
+  outline: 2px solid var(--sl-color-text-accent);
+  outline-offset: 4px;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -50,6 +50,9 @@ export default defineConfig({
         },
       },
       social: [],
+      components: {
+        MarkdownContent: './src/components/docs/MarkdownContent.astro',
+      },
       // 手动分组，避免 autogenerate 暴露英文目录名。
       sidebar: docsSidebar,
       customCss: ['./src/styles/global.css'],

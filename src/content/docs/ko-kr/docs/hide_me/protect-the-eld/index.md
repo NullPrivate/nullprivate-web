@@ -1,18 +1,6 @@
 ---
-title: "保护老年人远离网络诈骗"
----
-
----
-layout: docs
-title: 노인을 온라인 사기로부터 보호하기
-draft: false
-categories: 가이드
-tags: [가이드, hide_me, 사이버 보안, 노인 보호, 사기 방지]
-date: 2024-10-30 11:02:08 +0800
-toc: false
-comments: false
-weight: 0
-description: 노인을 대상으로 한 사이버 보안 가이드로, 개인 서비스 설정과 AdGuard 보호를 통해 온라인 사기를 효과적으로 예방합니다.
+title: "노인을 온라인 사기로부터 보호하기"
+description: "노인을 대상으로 한 사이버 보안 가이드로, 개인 서비스 설정과 AdGuard 보호를 통해 온라인 사기를 효과적으로 예방합니다."
 ---
 
 ## 노인이 직면한 온라인 위험

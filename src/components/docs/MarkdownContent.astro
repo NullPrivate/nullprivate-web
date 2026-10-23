@@ -1,0 +1,59 @@
+---
+import { getCollection } from 'astro:content';
+import DefaultMarkdownContent from '@astrojs/starlight/components/MarkdownContent.astro';
+import { Icon } from '@astrojs/starlight/components';
+import { privacyGuideSlugs } from '../../config/docs-sidebar.mjs';
+import { localeFromPath, localizedPath, unlocalizedPath } from '../../lib/site';
+
+// 包装默认内容组件，保留文档正文、插槽和 Starlight 的 Markdown 样式。
+const { entry } = Astro.locals.starlightRoute;
+const locale = localeFromPath(Astro.url.pathname);
+const isPrivacyIndex = unlocalizedPath(Astro.url.pathname).replace(/\/$/, '') === '/docs/hide_me';
+const docs = isPrivacyIndex ? await getCollection('docs') : [];
+const entriesById = new Map(docs.map((doc) => [doc.id, doc]));
+const guides = isPrivacyIndex ? privacyGuideSlugs.map((slug) => {
+  const href = localizedPath(`/${slug}/`, locale);
+  const guide = entriesById.get(href.slice(1, -1));
+  if (!guide) throw new Error(`专题文章元数据缺失：${href}`);
+  return { href, title: guide.data.title, description: guide.data.description };
+}) : [];
+---
+
+<DefaultMarkdownContent>
+  <slot />
+  {isPrivacyIndex && (
+    <section class="topic-index not-content" aria-label={entry.data.title}>
+      <p class="topic-intro">{entry.data.description}</p>
+      <nav class="topic-navigation" aria-label={entry.data.title}>
+        <ol class="topic-grid">
+          {guides.map((guide, index) => (
+            <li>
+              <a class="topic-card" href={guide.href}>
+                <span class="topic-number" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
+                <div class="topic-copy"><h2>{guide.title}</h2><p>{guide.description}</p></div>
+                <Icon name="right-arrow" size="1.25rem" />
+              </a>
+            </li>
+          ))}
+        </ol>
+      </nav>
+    </section>
+  )}
+</DefaultMarkdownContent>
+
+<style>
+  .topic-index { margin-block: 0 2rem; }
+  .topic-intro { margin: 0 0 1.5rem; color: var(--sl-color-gray-2); font-size: 1rem; line-height: 1.8; }
+  .topic-grid { display: grid; gap: 1rem; list-style: none; margin: 0; padding: 0; }
+  .topic-grid li { min-width: 0; }
+  .topic-card { display: flex; align-items: flex-start; gap: 1rem; height: 100%; padding: 1.25rem; border: 1px solid var(--sl-color-gray-5); border-radius: .75rem; background: var(--sl-color-bg); color: var(--sl-color-white); text-decoration: none; }
+  .topic-card:hover { border-color: var(--sl-color-gray-2); background: var(--sl-color-bg-sidebar); }
+  .topic-card:focus-visible { outline: 2px solid var(--sl-color-text-accent); outline-offset: 4px; }
+  .topic-number { flex-shrink: 0; font-size: .875rem; line-height: 1.75rem; color: var(--sl-color-gray-2); font-variant-numeric: tabular-nums; }
+  .topic-copy { flex: 1; min-width: 0; }
+  h2 { margin: 0; font-size: 1.125rem; font-weight: 600; line-height: 1.5; text-wrap: balance; overflow-wrap: anywhere; }
+  .topic-copy p { margin: .5rem 0 0; font-size: .875rem; line-height: 1.75; color: var(--sl-color-gray-2); overflow-wrap: anywhere; }
+  .topic-card :global(svg) { margin-top: .25rem; flex-shrink: 0; }
+  @media (min-width: 50rem) { .topic-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 30rem) { .topic-card { gap: .75rem; padding: 1rem; } }
+</style>
