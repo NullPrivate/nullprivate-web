@@ -99,7 +99,7 @@
   "service.copy.failed": "{label} 복사 실패",
   "service.status.remaining": "{days}일 남음",
   "service.status.expired": "{days}일 만료됨",
-  "service.query.hint": "전체 서비스 링크를 직접 붙여넣을 수 있습니다. 로컬 연동 테스트용 stage API는 URL에 ?api=stage를 추가할 수 있습니다.",
+  "service.query.hint": "전체 서비스 링크를 직접 붙여넣을 수 있습니다.",
   "service.title": "내 서비스",
   "service.description": "서비스 상태 확인, 갱신, 초대 링크 복사. 결제 완료 후 이 페이지로 돌아와 주문을 확인할 수도 있습니다.",
   "service.gifts.title": "최근 증정 내역",
@@ -126,7 +126,6 @@
   "renew.b3b5c5b5-0f9b-4b7b-8f4a-3d5e3f1b3b7b.label": "3개월",
   "renew.c7c9c9c9-4f8b-4d1e-8f2b-4d4e4f1b4f8b.label": "6개월",
   "renew.d9d9d9d9-105e-4031-b017-c4f08ea5f996.label": "12개월",
-  "service.api": "현재 API: {endpoint}",
   "common.copy": "복사",
   "service.renew.duration": "갱신 기간"
 }

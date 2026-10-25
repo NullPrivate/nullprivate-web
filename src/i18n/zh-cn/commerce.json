@@ -99,7 +99,7 @@
   "service.copy.failed": "复制{label}失败",
   "service.status.remaining": "剩余 {days} 天",
   "service.status.expired": "已过期 {days} 天",
-  "service.query.hint": "支持直接粘贴完整服务链接。本地联调 stage API 可在 URL 加 ?api=stage。",
+  "service.query.hint": "支持直接粘贴完整服务链接。",
   "service.title": "我的服务",
   "service.description": "查询服务状态、续费、复制邀请链接。支付成功后也可回到这里核对订单。",
   "service.gifts.title": "近期赠送记录",
@@ -126,7 +126,6 @@
   "renew.b3b5c5b5-0f9b-4b7b-8f4a-3d5e3f1b3b7b.label": "3个月",
   "renew.c7c9c9c9-4f8b-4d1e-8f2b-4d4e4f1b4f8b.label": "6个月",
   "renew.d9d9d9d9-105e-4031-b017-c4f08ea5f996.label": "12个月",
-  "service.api": "当前 API: {endpoint}",
   "common.copy": "复制",
   "service.renew.duration": "续费时长"
 }

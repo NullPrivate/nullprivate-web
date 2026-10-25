@@ -99,7 +99,7 @@
   "service.copy.failed": "Failed to copy {label}",
   "service.status.remaining": "{days} days remaining",
   "service.status.expired": "Expired {days} days ago",
-  "service.query.hint": "Supports pasting full service URLs directly. For local stage API debugging, add ?api=stage to the URL.",
+  "service.query.hint": "Supports pasting full service URLs directly.",
   "service.title": "My Services",
   "service.description": "Check service status, renew, and copy invite links. You can also return here after successful payment to verify orders.",
   "service.gifts.title": "Recent Bonus Records",
@@ -126,7 +126,6 @@
   "renew.b3b5c5b5-0f9b-4b7b-8f4a-3d5e3f1b3b7b.label": "3 Months",
   "renew.c7c9c9c9-4f8b-4d1e-8f2b-4d4e4f1b4f8b.label": "6 Months",
   "renew.d9d9d9d9-105e-4031-b017-c4f08ea5f996.label": "12 Months",
-  "service.api": "Current API: {endpoint}",
   "common.copy": "Copy",
   "service.renew.duration": "Renewal Duration"
 }

@@ -13,6 +13,7 @@ export default defineConfig({
   site: brand.siteUrl,
   outDir: `dist/${brand.id}`,
   output: 'static',
+  devToolbar: { enabled: false },
   redirects: {
     // Astro 会自动兼容尾斜杠，勿同时声明两种形式。
     '/guides/overview': '/docs/',

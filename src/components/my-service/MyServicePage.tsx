@@ -454,7 +454,6 @@ export default function MyServicePage({
           <li>{t('service.return.credentials')}</li>
           <li>{t('service.return.query')}</li>
         </ol>
-        <p className="mt-3 text-xs text-[var(--marketing-muted)]">{t('service.api', { endpoint })}</p>
       </section>
     </div>
   );
