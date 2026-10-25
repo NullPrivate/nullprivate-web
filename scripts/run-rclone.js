@@ -7,15 +7,10 @@ const TOOL_NAME = 'rclone';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 function resolveBinaryPath(repoRoot = path.resolve(__dirname, '..'), platform = process.platform) {
-  const candidates = [
-    path.resolve(repoRoot, 'tools', platform === 'win32' ? `${TOOL_NAME}.exe` : TOOL_NAME),
-    path.resolve(repoRoot, '..', 'www.nullprivate.com', 'tools', platform === 'win32' ? `${TOOL_NAME}.exe` : TOOL_NAME),
-  ];
-  const binaryPath = candidates.find((item) => fs.existsSync(item));
-  if (!binaryPath) {
-    throw new Error(`Missing bundled ${TOOL_NAME} binary. Checked: ${candidates.join(', ')}`);
-  }
-  return binaryPath;
+  const name = platform === 'win32' ? `${TOOL_NAME}.exe` : TOOL_NAME;
+  const bundled = path.resolve(repoRoot, 'tools', name);
+  // 优先使用本仓库工具，否则由操作系统从 PATH 查找。
+  return fs.existsSync(bundled) ? bundled : name;
 }
 
 function ensureExecutable(binaryPath, platform = process.platform) {
@@ -28,13 +23,22 @@ function ensureExecutable(binaryPath, platform = process.platform) {
 function run(argv = process.argv.slice(2), options = {}) {
   const repoRoot = options.repoRoot ?? path.resolve(__dirname, '..');
   const platform = options.platform ?? process.platform;
+  const env = { ...(options.env ?? process.env) };
+  // 相对配置路径统一以仓库根目录为基准，兼容从其他目录调用。
+  if (env.RCLONE_CONFIG) env.RCLONE_CONFIG = path.resolve(repoRoot, env.RCLONE_CONFIG);
+  const args = argv.map((arg, index) => {
+    if (argv[index - 1] === '--config') return path.resolve(repoRoot, arg);
+    if (arg.startsWith('--config=')) return `--config=${path.resolve(repoRoot, arg.slice(9))}`;
+    return arg;
+  });
   const binaryPath = resolveBinaryPath(repoRoot, platform);
-  ensureExecutable(binaryPath, platform);
-  const result = spawnSync(binaryPath, argv, {
+  if (path.isAbsolute(binaryPath)) ensureExecutable(binaryPath, platform);
+  const result = spawnSync(binaryPath, args, {
     cwd: repoRoot,
+    env,
     stdio: 'inherit',
   });
-  if (result.error) throw result.error;
+  if (result.error) throw new Error('无法启动 rclone，请在 PATH 或本仓库 tools 中安装工具。');
   if (typeof result.status === 'number') return result.status;
   return 1;
 }
@@ -43,8 +47,8 @@ const isDirectRun = process.argv[1] && path.resolve(process.argv[1]) === fileURL
 if (isDirectRun) {
   try {
     process.exitCode = run();
-  } catch (error) {
-    console.error(error.message);
+  } catch {
+    console.error('rclone 未完成，请检查本地工具与配置。');
     process.exitCode = 1;
   }
 }

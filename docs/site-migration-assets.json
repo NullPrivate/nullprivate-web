@@ -1,0 +1,41 @@
+{
+  "description": "旧 static 公开资产迁移基线；后续资源在本仓库维护，更新时同步清单。",
+  "assets": [
+    {
+      "path": "services/i18n/zh-cn.json",
+      "bytes": 17038,
+      "sha256": "a72fd2f7abe4c13bf7963716d1273ef468d267fe45381cbf98847f27a02cef2e",
+      "action": "imported"
+    },
+    {
+      "path": "videos/202501272309210.mp4",
+      "bytes": 1107092,
+      "sha256": "1f77ea12b71ee1dbb9a3b275a47af1c6993e1fa1afd03002401ffdf4f1227c25",
+      "action": "preserved"
+    },
+    {
+      "path": "videos/202501281117331.mp4",
+      "bytes": 5180200,
+      "sha256": "594cdad666189ba09f5db0adf387b6a4fb08129b1a9bcae7fffc76ebe25dbd60",
+      "action": "preserved"
+    },
+    {
+      "path": "videos/202501281122655.mp4",
+      "bytes": 6901706,
+      "sha256": "d5daf731e85c8e4493d3f5211c968f7b77c68131de03c6ea69050330ee674a20",
+      "action": "preserved"
+    },
+    {
+      "path": "videos/202501281147590.mp4",
+      "bytes": 6080439,
+      "sha256": "40fcac996e98e8225435fd69880ed7e8ed12129d01b3cc40a80fecbf98e41674",
+      "action": "preserved"
+    },
+    {
+      "path": "videos/202501281149211.mp4",
+      "bytes": 4427111,
+      "sha256": "66d2aeb9d4302c9b785cad225d0e421e89f6abbd304f9fdf0c4a493818a9e8b9",
+      "action": "preserved"
+    }
+  ]
+}

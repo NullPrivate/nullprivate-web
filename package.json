@@ -3,6 +3,9 @@
   "type": "module",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=24.0.0 <25"
+  },
   "scripts": {
     "dev": "astro dev --port 4321",
     "start": "astro dev --port 4321",
@@ -13,6 +16,8 @@
     "preview": "astro preview --port 4321",
     "astro": "astro",
     "typecheck": "astro check",
+    "test": "node --test scripts/test-*.mjs",
+    "test:deployment": "node --test scripts/test-deployment.mjs",
     "test:homepage": "node --test scripts/test-homepage.mjs",
     "test:marketing": "node --test scripts/test-marketing.mjs",
     "test:docs-navigation": "node --test scripts/test-docs-navigation.mjs",
@@ -25,7 +30,7 @@
     "migrate:assets": "node scripts/migrate-content.mjs --assets-only",
     "upload:r2:preview": "npm run build:nullprivate && wrangler deploy --config wrangler.jsonc",
     "upload:r2:preview:adguardprivate": "npm run build:adguardprivate && wrangler deploy --config wrangler.preview.adguardprivate.jsonc",
-    "upload:aliyun:preview": "npm run build:adguardprivate && node scripts/run-rclone.js sync dist/adguardprivate/ ${OSS_PREVIEW_TARGET:-aliyun_oss_hangzhou:www-adguardprivate-com-astro-preview} --config ${RCLONE_CONFIG:-./rclone.conf} --checksum --fast-list --transfers 8 --checkers 16 -v -P --stats 2s --stats-file-name-length 0"
+    "upload:aliyun:preview": "npm run build:adguardprivate && node scripts/run-rclone.js sync dist/adguardprivate/ \"${OSS_PREVIEW_TARGET:-aliyun_oss_hangzhou:www-adguardprivate-com-astro-preview}\" --config \"${RCLONE_CONFIG:-./rclone.conf}\" --checksum --fast-list --transfers 8 --checkers 16 -v -P --stats 2s --stats-file-name-length 0"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.12",
@@ -40,5 +45,8 @@
     "sharp": "^0.35.3",
     "tailwindcss": "^4.3.3",
     "typescript": "^6.0.3"
+  },
+  "devDependencies": {
+    "yaml": "2.9.1"
   }
 }

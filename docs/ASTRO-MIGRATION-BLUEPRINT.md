@@ -1,6 +1,12 @@
 # Astro 完整迁移蓝图
 
-> 状态：草案，待评审后初始化脚手架  
+> 状态：历史设计记录，保留迁移决策背景；当前唯一维护源为 `nullprivate-web`。
+>
+> 日常维护与生产发布以 [README](../README.md)、[生产部署](DEPLOY-PRODUCTION.md) 和 [迁移清单](SITE-MIGRATION.md) 为准；以下阶段计划与旧路径仅作历史参考。
+>
+> 当前生产方案（2026-10-26）：用户自行创建 Cloudflare Pages / ESA Pages 并直连本仓库 Git；GitHub Actions 仅做验证，无需发布 secrets。部署章节已按此方案更新，迁移输入中的旧平台仅作历史记录。
+>
+> 当前只有两仓本地改动，线上仍可能是旧发布。用户手动完成平台 Git 连接与域名切换，并在 Cloudflare 控制台停用绑定旧仓库的 Pages 自动构建；本次没有线上操作。
 > 日期：2026-10-23  
 > 范围：`adguardprivate.com` / `nullprivate.com` 整站迁移到 Astro  
 > 原则：静态优先、zh-cn 源语言、双品牌同内容源、分阶段切流、转化可度量
@@ -11,7 +17,7 @@
 
 1. 用 Astro 提升营销页感染力与定价转化路径。
 2. 用 Starlight 承接现有文档体验，并保持静态搜索。
-3. 继续静态部署：Cloudflare Pages（nullprivate）+ 阿里云 OSS（adguardprivate）。
+3. 静态部署：Cloudflare Pages（nullprivate）+ ESA Pages（adguardprivate），均由平台连接新仓库 Git 构建发布。
 4. 保留现有翻译流水线思路：只手改 `zh-cn`，其余语言生成。
 5. 尽量复用现有 Markdown / 静态资源，降低内容重写成本。
 6. 为 GA 关键事件与品牌分流预留清晰埋点边界。
@@ -35,7 +41,7 @@
 | 语言 | `zh-cn`（源）、`zh-hk`、`en-us`、`ko-kr`、`ja-jp` |
 | 双品牌 | 同内容，不同 `baseURL` / GA ID |
 | 高交互页 | `pages/pricing/index.html`（约 850 行）、`pages/my-service/index.html`（约 767 行） |
-| 部署 | `build:adguardprivate` → OSS；`build:nullprivate` → Cloudflare Pages / Wrangler |
+| 历史部署输入 | 旧 AdGuardPrivate 使用 OSS；旧 Cloudflare 发布入口与平台 Git 绑定需在切换时分别核查 |
 | 菜单 | 文档 / 博客 / 购买 / 我的服务 / 外部 list 站 |
 
 已确认品牌差异（当前配置级）：
@@ -60,8 +66,7 @@ nullprivate-web/
   package.json
   astro.config.ts
   tsconfig.json
-  wrangler.jsonc
-  rclone.conf                 # 或沿用上层/CI secret，不入库明文
+  wrangler.jsonc              # 可选历史预览配置，生产由 Pages Git 集成管理
   brands/
     nullprivate.ts
     adguardprivate.ts
@@ -121,7 +126,6 @@ nullprivate-web/
     migrate-content.mjs
     sync-i18n-from-hugo.mjs
     build-brand.mjs
-    upload-aliyun.mjs
     baidu-push.mjs
   tests/
 ```
@@ -134,7 +138,7 @@ nullprivate-web/
    - 文档：Starlight
 3. **重交互隔离**：定价、我的服务做成 React 组件，避免散落 HTML `<script>`。
 4. **动效收敛**：仅 Hero 与 Pricing 使用 Motion；其余保持 CSS transition。
-5. **搜索静态化**：Pagefind 建索引，适合 OSS / Pages 双部署。
+5. **搜索静态化**：Pagefind 建索引，适合 Cloudflare Pages / ESA Pages 双品牌部署。
 
 ## 4. 技术选型落地
 
@@ -149,7 +153,7 @@ nullprivate-web/
 | 动效 | `motion`（原 Framer Motion）或 Motion One | 只用于首屏与定价 |
 | 搜索 | Pagefind | 构建后索引 `dist/` |
 | 图标 | Lucide 或保留少量 Font Awesome | 新站优先 Lucide，减少 CSS 体积 |
-| 包管理 | pnpm（推荐）或 npm | 与仓库其他项目统一即可 |
+| 包管理 | npm | Node.js 24，使用 `npm ci` 安装锁定依赖 |
 | 测试 | Vitest + Playwright | 组件单测 + 定价关键路径 e2e |
 | 分析 | GA4 gtag | 双品牌不同 Measurement ID |
 
@@ -195,16 +199,14 @@ export default {
 
 ```bash
 # 开发：默认 nullprivate + zh-cn
-pnpm dev
+npm run dev
 
 # 生产构建
-BRAND=nullprivate pnpm build        # -> dist/nullprivate
-BRAND=adguardprivate pnpm build     # -> dist/adguardprivate
-
-# 上传
-pnpm upload:r2                      # Cloudflare Pages / Wrangler
-pnpm upload:aliyun                  # rclone sync -> OSS
+npm run build:nullprivate          # -> dist/nullprivate
+npm run build:adguardprivate        # -> dist/adguardprivate
 ```
+
+两平台均使用默认仓库根目录、Node.js 24、`npm ci`。品牌由构建脚本内置，无需额外品牌变量；生产发布由平台 Git 集成完成。
 
 实现建议：
 
@@ -403,17 +405,14 @@ www.nullprivate.com/config/_default/menus.*.yaml -> src/i18n 或 site nav config
 
 ## 11. 部署与 CI/CD
 
-### 本地命令（目标态）
+### 本地验证命令
 
 ```bash
-pnpm install
-pnpm dev                          # zh-cn + 默认 brand
-pnpm build:nullprivate
-pnpm build:adguardprivate
-pnpm test
-pnpm upload:r2                    # nullprivate
-pnpm upload:aliyun                # adguardprivate
-pnpm baidu:push
+npm ci
+npm run dev                       # 默认 brand
+npm run build:all
+npm test
+npm run typecheck
 ```
 
 ### 产物
@@ -423,35 +422,23 @@ dist/nullprivate/**
 dist/adguardprivate/**
 ```
 
-### CI 建议
+### CI 与平台发布职责
 
-分阶段：
+1. GitHub Actions 在 PR、`main` push 和手动触发时仅执行双品牌构建、测试与类型检查，使用只读仓库权限，无需发布 secrets。
+2. Cloudflare Pages：`npm run build:nullprivate` → `dist/nullprivate`。
+3. ESA Pages：`npm run build:adguardprivate` → `dist/adguardprivate`。
+4. 用户在平台创建项目、连接本仓库 Git，根目录用默认仓库根目录、Node.js 24、安装命令 `npm ci`；品牌无需额外变量。
+5. 平台发布全量静态产物；CI 与平台构建独立运行，CI 成功并不代表生产已发布，也不是当前平台发布的自动门禁。
 
-**阶段 A：并行发布（推荐）**
+### 人工切换与归档交接
 
-1. Hugo 现网继续部署
-2. Astro 先发到预览域：
-   - `astro-preview.nullprivate.com`
-   - `astro-preview.adguardprivate.com`
-3. 用 Playwright + 人工验收首页/定价/文档
+1. 审阅并提交两仓本地改动；当前线上仍可能是旧发布。
+2. 用户通过平台预览地址验收全量资源、首页、定价、文档与 URL 兼容。
+3. 用户在 Cloudflare 控制台停用仍绑定旧仓库的 Pages 自动构建；旧 Actions 归档与平台 Git 集成分别处理。
+4. 用户手动完成生产域名切换，确认 TLS、路由、发布版本与 sitemap，再处理站长平台提交。
+5. 旧 Hugo 仓库保留本地历史构建能力；旧 workflow、npm 上传入口与 VS Code 上传任务只显示归档提示。
 
-**阶段 B：按路径切流**
-
-1. 先切 `/`、`/pages/pricing/`
-2. 再切 `/blog/`
-3. 最后切 `/docs/`
-
-**阶段 C：Hugo 只读归档**
-
-1. 停止 Hugo 生产构建
-2. 保留仓库只读一段时间
-3. 百度推送与 Search Console 改指向新 sitemap
-
-### 双通道上传
-
-1. nullprivate：Wrangler / Cloudflare Pages，对齐现 `wrangler.jsonc`
-2. adguardprivate：rclone sync OSS，对齐现 `upload_aliyun`
-3. 凭证继续走 CI secrets / 本地忽略文件，不写入蓝图或仓库明文
+本次仅修改本地文件，没有执行平台配置或上传。详细步骤见 [生产部署](DEPLOY-PRODUCTION.md)，资源兼容待办见 [迁移清单](SITE-MIGRATION.md)。
 
 ## 12. 迁移阶段计划
 
@@ -459,13 +446,13 @@ dist/adguardprivate/**
 
 1. 确认本蓝图中的 URL、品牌、i18n 决策
 2. 冻结“第一期页面清单”
-3. 盘点 static 资产哪些必须迁（favicon、验证文件、videos、services）
+3. 按实际引用盘点静态资产（favicon、videos、services），外部验证入口由维护者确认。
 
 ### Phase 1：脚手架（1–2 天）
 
 1. 初始化 Astro + React + Tailwind + Starlight
 2. 建立 brand config 与双构建脚本
-3. 打通 `pnpm dev` / `pnpm build:*`
+3. 打通 `npm run dev` / `npm run build:all`
 
 ### Phase 2：高杠杆页面（3–5 天）
 
@@ -488,7 +475,7 @@ dist/adguardprivate/**
 1. 导入或生成其余语言
 2. hreflang / sitemap / robots
 3. 旧 URL redirect 表
-4. Search Console / 百度验证文件迁移
+4. Search Console / 百度验证按当前平台需求独立配置；历史百度验证文件已确认移除。
 
 ### Phase 5：切流与观察（1–2 周）
 
@@ -522,8 +509,8 @@ dist/adguardprivate/**
 ### 兼容
 
 1. 主要现网 URL 无大面积 404。
-2. 百度/Google 验证文件仍可访问。
-3. OSS 与 Cloudflare 两套上传链路可用。
+2. 按维护者选定的方式验收站长验证；历史百度验证文件已移除。
+3. Cloudflare Pages 与 ESA Pages 的 Git 构建可发布对应品牌全量资产；平台验收由用户执行。
 
 ## 14. 风险与缓解
 
@@ -548,12 +535,12 @@ dist/adguardprivate/**
 5. `content/zh-cn/pages/my-service/index.html` → `MyServicePage`
 6. `i18n/zh-cn.yaml` → `src/i18n/zh-cn.json`
 7. `config/_default/menus.zh-cn.yaml` → nav config
-8. `static/robots.txt`、百度验证文件、必要 favicon/视频
+8. 按品牌生成的 robots，以及实际引用的 favicon/视频。
 
 ### 评估后决定
 
-1. `static/filters/**`：是否改由 list/产品站托管
-2. `static/services/**`：保留静态 JSON 或改 API
+1. `static/filters/**`：已确认官网无前端引用，已移除，新站不承担旧列表托管（见 [当前资源清单](SITE-MIGRATION.md)）。
+2. `static/services/**`：保留文档引用的 `services/i18n/zh-cn.json`；无引用的游戏列表和 schema 已移除。
 3. `layouts/partials/help.html`：迁为共享组件
 4. 其他语言内容：导入 vs 重新翻译生成
 
@@ -590,7 +577,7 @@ dist/adguardprivate/**
 1. 迁入现网定价页完整下单流到 `PricingPage`。
 2. 明确文档最终挂载路径（保持 `/docs/*` 优先）。
 3. 编写内容迁移脚本，导入 5 语言 docs/blog。
-4. 接入 Cloudflare Pages / OSS 上传脚本与预览域。
+4. 用户完成 Cloudflare Pages / ESA Pages Git 接入、预览验收与域名切换。
 
 ---
 
@@ -598,24 +585,24 @@ dist/adguardprivate/**
 
 | 现网 | 新站目标 |
 | --- | --- |
-| `npm run serve:zh-cn:dev` | `pnpm dev` |
-| `npm run build:nullprivate` | `pnpm build:nullprivate` |
-| `npm run build:adguardprivate` | `pnpm build:adguardprivate` |
-| `npm run upload_r2` | `pnpm upload:r2` |
-| `npm run upload_aliyun` | `pnpm upload:aliyun` |
-| `npm run baidu:push` | `pnpm baidu:push` |
+| `npm run serve:zh-cn:dev` | `npm run dev` |
+| `npm run build:nullprivate` | `npm run build:nullprivate` |
+| `npm run build:adguardprivate` | `npm run build:adguardprivate` |
+| `npm run upload_r2`（归档提示） | 用户连接 Cloudflare Pages Git 项目 |
+| `npm run upload_aliyun`（归档提示） | 用户连接 ESA Pages Git 项目 |
+| `npm run baidu:push`（历史手动工具） | 用户在切换后确认站长平台 sitemap |
 
 ## 附录 B. 成功后的仓库关系
 
 ```text
 nullprivate/
-  www.nullprivate.com/     # 迁移完成前保留；完成后可归档
+  www.nullprivate.com/     # Hugo 历史归档，平台停用由用户单独确认
   nullprivate-web/         # 新生产站点
   adguard_private_backend/ # API / 支付 / 回跳页，不变
   nullprivate-list/        # 列表站，继续外链
 ```
 
-本蓝图确认后，脚手架初始化应只发生在 `nullprivate-web/`，不直接改现网 Hugo 生产链路。
+日常维护统一在 `nullprivate-web/`；旧仓库归档文件与平台线上状态分别交接。
 
 
 ## 18. 执行进度（2026-10-23）

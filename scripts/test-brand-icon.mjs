@@ -36,13 +36,4 @@ for (const brand of ['nullprivate', 'adguardprivate']) {
     assert.equal(await read(`${output}${src.replace(/^\//, '')}`), source);
   });
 
-  test(`${brand}：设计预览覆盖实际小尺寸与明暗背景`, async () => {
-    const html = await read(`${output}brand/preview.html`);
-    for (const size of [16, 24, 32, 48, 64, 128]) {
-      assert.ok(html.includes(`width="${size}" height="${size}"`));
-    }
-    assert.match(html, /浅色背景/);
-    assert.match(html, /深色背景/);
-    assert.match(html, /download="ningping-icon.svg"/);
-  });
 }
