@@ -52,6 +52,7 @@ export default defineConfig({
       },
       social: [],
       components: {
+        Head: './src/components/docs/Head.astro',
         MarkdownContent: './src/components/docs/MarkdownContent.astro',
       },
       // 手动分组，避免 autogenerate 暴露英文目录名。

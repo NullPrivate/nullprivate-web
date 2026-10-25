@@ -1,6 +1,7 @@
 ---
 import { getBrand } from '../lib/brand';
 import NavIcon from '../components/marketing/NavIcon.astro';
+import StyleLayerOrder from '../components/StyleLayerOrder.astro';
 import { Icon } from '@astrojs/starlight/components';
 import { displayBrandName, getMessages, languageTags, localizedPath, unlocalizedPath } from '../lib/i18n';
 import { locales, localeLabels, type Locale } from '../lib/site';
@@ -43,6 +44,7 @@ const navigation = [
 <!doctype html>
 <html lang={languageTags[locale]} data-marketing data-theme="light">
   <head>
+    <StyleLayerOrder />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script is:inline>
