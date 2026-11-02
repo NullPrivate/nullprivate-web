@@ -138,7 +138,14 @@ const navigation = [
     </main>
     <footer class="marketing-footer">
       <div class="site-footer">
-        <div><p class="footer-brand">{brandName} · {t.siteTagline}</p><p class="footer-registration"><a href="https://beian.miit.gov.cn/" target="_blank" rel="noreferrer">{brand.beian}</a></p></div>
+        <div>
+          <p class="footer-brand">{brandName} · {t.siteTagline}</p>
+          {brand.beian ? (
+            <p class="footer-registration">
+              <a href="https://beian.miit.gov.cn/" target="_blank" rel="noreferrer">{brand.beian}</a>
+            </p>
+          ) : null}
+        </div>
         <nav aria-label={t.footerNav}><a href={localizedPath('/docs/startup/privacy_policy/', locale)}>{t.privacy}</a><a href={localizedPath('/docs/startup/terms-of-service/', locale)}>{t.terms}</a><a href={localizedPath('/docs/faq/how-to-support/', locale)}>{t.support}</a></nav>
       </div>
     </footer>

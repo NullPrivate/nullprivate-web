@@ -169,7 +169,7 @@ export default {
   siteUrl: 'https://www.nullprivate.com',
   gaId: 'G-CQZWQL8008',
   apiBase: 'https://adguard.adguardprivate.com/api/v1',
-  beian: '鄂ICP备2024055931号-3',
+  // nullprivate.com 不悬挂备案号
   primaryHost: 'www.nullprivate.com',
   theme: {
     primary: '#...',
@@ -186,7 +186,7 @@ export default {
   siteUrl: 'https://www.adguardprivate.com',
   gaId: 'G-W6PMMZECGL',
   apiBase: 'https://adguard.adguardprivate.com/api/v1',
-  beian: '鄂ICP备2024055931号-3', // 以现网为准复核
+  beian: '鄂ICP备2024055931号-1', // adguardprivate.com 网站备案号
   primaryHost: 'www.adguardprivate.com',
   theme: {
     primary: '#...',

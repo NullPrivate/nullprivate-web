@@ -1,0 +1,7 @@
+{
+  // ESA Pages 生产项目：AdGuardPrivate 官网静态资源
+  "name": "nullprivate-web",
+  "assets": {
+    "directory": "./dist/adguardprivate"
+  }
+}

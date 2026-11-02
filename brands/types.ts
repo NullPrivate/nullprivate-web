@@ -16,7 +16,8 @@ export interface BrandConfig {
   apiBase: string;
   stageApiBase: string;
   stageHost: string;
-  beian: string;
+  /** 网站备案号；未备案品牌可不填，页脚不展示 */
+  beian?: string;
   primaryHost: string;
   subtitle: string;
   description: string;
